@@ -30,8 +30,8 @@ except Exception,e:
 
 _punct_re = re.compile(r'[\t !"#$%&\'()*\-/<=>?@\[\\\]^_`{|},.]+')
 
-MARKDOWN_PARSER = markdown.Markdown(extensions=['fenced_code'], 
-                                    output_format="html5", 
+MARKDOWN_PARSER = markdown.Markdown(extensions=['fenced_code'],
+                                    output_format="html5",
                                     safe_mode=True)
 
 class Post(db.Model):
@@ -74,7 +74,7 @@ except Exception:
 def is_admin():
     auth = request.authorization
     if not auth or not (auth.username == app.config["ADMIN_USERNAME"]
-                        and check_password_hash(app.config["ADMIN_PASSWORD"], 
+                        and check_password_hash(app.config["ADMIN_PASSWORD"],
                                                 auth.password)):
         return False
     return True
@@ -85,8 +85,8 @@ def requires_authentication(func):
     def _auth_decorator(*args, **kwargs):
         """ does the wrapping """
         if not is_admin():
-            return Response("Could not authenticate you", 
-                            401, 
+            return Response("Could not authenticate you",
+                            401,
                             {"WWW-Authenticate":'Basic realm="Login Required"'})
         return func(*args, **kwargs)
 
@@ -99,7 +99,7 @@ def index():
     posts_master = db.session.query(Post)\
                        .filter_by(draft=False)\
                        .order_by(Post.created_at.desc())
-    
+
     posts_count = posts_master.count()
 
     posts = posts_master\
@@ -113,11 +113,11 @@ def index():
                                + app.config["POSTS_PER_PAGE"]
     there_is_more = posts_count > last_possible_post_on_page
 
-    return render_template("index.html", 
-                           posts=posts, 
+    return render_template("index.html",
+                           posts=posts,
                            now=datetime.datetime.now(),
-                           is_more=there_is_more, 
-                           current_page=page, 
+                           is_more=there_is_more,
+                           current_page=page,
                            is_admin=is_admin())
 
 @app.route("/style.css")
@@ -149,7 +149,7 @@ def view_post_slug(slug):
         #TODO: Better exception
         return abort(404)
 
-    if not any(botname in request.user_agent.string for botname in 
+    if not any(botname in request.user_agent.string for botname in
                 ['Googlebot',  'Slurp',         'Twiceler',     'msnbot',
                  'KaloogaBot', 'YodaoBot',      '"Baiduspider',
                  'googlebot',  'Speedy Spider', 'DotBot']):
@@ -164,7 +164,7 @@ def view_post_slug(slug):
 @app.route("/new", methods=["POST", "GET"])
 @requires_authentication
 def new_post():
-    post = Post(title=request.form.get("title","untitled"),
+    post = Post(title=request.form.get("post_title","untitled"),
                 created_at=datetime.datetime.now())
 
     db.session.add(post)
@@ -211,8 +211,8 @@ def delete(post_id):
         db.session.delete(post)
         db.session.commit()
 
-    return redirect(request.args.get("next","") 
-        or request.referrer 
+    return redirect(request.args.get("next","")
+        or request.referrer
         or url_for('index'))
 
 @app.route("/admin", methods=["GET", "POST"])
@@ -274,7 +274,7 @@ def slugify(text, delim=u'-'):
         if word:
             result.append(word)
     slug = unicode(delim.join(result))
-    # This could have issues if a post is marked as draft, then live, then 
+    # This could have issues if a post is marked as draft, then live, then
     # draft, then live and there are > 1 posts with the same slug. Oh well.
     count = db.session.query(Post).filter_by(slug=slug).count()
     if count > 0:
