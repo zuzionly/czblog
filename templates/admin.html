@@ -7,9 +7,9 @@
 
 {% block content %}
 <div id="drafts" class="col">
-    <h1>Drafts <a href="{{ url_for('new_post') }}" class="button">New draft</a></h1>
-    <form action="{{ url_for('new_post') }}" method="POST">
-        <input name="title" id="post_title" type="text" size=30 placeholder="Start typing an idea here">
+    <h1>Drafts <a href="#" class="button" onclick="document.getElementById('new_post').submit()">New draft</a></h1>
+    <form id=new_post action="{{ url_for('new_post') }}" method="post">
+        <input name="post_title" id="post_title" type="text" size=30 placeholder="Start typing an idea here">
     </form>
     <ul>
         {% for draft in drafts %}
