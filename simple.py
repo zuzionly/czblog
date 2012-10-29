@@ -141,10 +141,10 @@ def view_post(post_id):
 
     return render_template("view.html", post=post, is_admin=is_admin())
 
-@app.route("/<slug>")
+@app.route("/post/<slug>")
 def view_post_slug(slug):
     try:
-        post = db.session.query(Post).filter_by(slug=slug, draft=False).one()
+        post = db.session.query(Post).filter_by(slug=slug,draft=False).one()
     except Exception:
         #TODO: Better exception
         return abort(404)
@@ -158,8 +158,9 @@ def view_post_slug(slug):
             .update({Post.views:Post.views+1})
         db.session.commit()
 
-    pid = request.args.get("pid", "0")
-    return render_template("view.html", post=post, pid=pid, is_admin=is_admin())
+##    pid = request.args.get("pid", "0")
+##    return render_template("view.html", post=post, pid=pid, is_admin=is_admin())
+    return render_template("view.html", post=post, is_admin=is_admin())
 
 @app.route("/new", methods=["POST", "GET"])
 @requires_authentication
