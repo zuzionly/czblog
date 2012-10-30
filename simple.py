@@ -16,7 +16,8 @@ from flask import render_template, request, Flask, flash, redirect, url_for, \
 from werkzeug.contrib.cache import FileSystemCache, NullCache
 
 app = Flask(__name__)
-app.config.from_object('settings')
+app.config.from_object('settings_core')
+app.config.from_object('settings_custom')
 db = SQLAlchemy(app)
 cache_directory = os.path.dirname(__file__)
 try:
@@ -73,8 +74,8 @@ except Exception:
 
 def is_admin():
     auth = request.authorization
-    if not auth or not (auth.username == app.config["ADMIN_USERNAME"]
-                        and check_password_hash(app.config["ADMIN_PASSWORD"],
+    if not auth or not (auth.username == app.config['ADMIN_USERNAME']
+                        and check_password_hash(app.config['ADMIN_PASSWORD'],
                                                 auth.password)):
         return False
     return True
@@ -254,6 +255,69 @@ def preview(post_id):
         return abort(404)
 
     return render_template("post_preview.html", post=post)
+
+@app.route("/admin/settings")
+@requires_authentication
+def settings():
+
+    return render_template("settings.html")
+
+@app.route("/admin/save/settings", methods=["POST"])
+@requires_authentication
+def save_settings():
+    custom_config = {'POSTS_PER_PAGE':None,\
+                     'POST_CONTENT_ON_HOMEPAGE':None,\
+                     'SHOW_VIEWS_ON_HOMEPAGE':None,\
+                     'ANALYTICS_ID':None,\
+                     'GITHUB_USERNAME':None,\
+                     'GOOGLE_PLUS_PROFILE':None,\
+                     'TWITTER_HANDLE':None,\
+                     'CONTACT_EMAIL':None,\
+                     'BLOG_TITLE':None,\
+                     'BLOG_TAGLINE':None,\
+                     'BLOG_URL':None,\
+                     'FONT_NAME':None}
+    # only save changed value
+    if app.config['POSTS_PER_PAGE']!=request.form.get('POSTS_PER_PAGE',0):
+        custom_config['POSTS_PER_PAGE'] = request.form.get('POSTS_PER_PAGE',0)
+    if app.config['POST_CONTENT_ON_HOMEPAGE']!=request.form.get('POST_CONTENT_ON_HOMEPAGE',0):
+        custom_config['POST_CONTENT_ON_HOMEPAGE'] = request.form.get('POST_CONTENT_ON_HOMEPAGE',0)
+    if app.config['SHOW_VIEWS_ON_HOMEPAGE']!=request.form.get('SHOW_VIEWS_ON_HOMEPAGE'):
+        custom_config['SHOW_VIEWS_ON_HOMEPAGE'] = request.form.get('SHOW_VIEWS_ON_HOMEPAGE')
+    if app.config['ANALYTICS_ID']!=request.form.get('ANALYTICS_ID'):
+        custom_config['ANALYTICS_ID'] = request.form.get('ANALYTICS_ID')
+    if app.config['GITHUB_USERNAME']!=request.form.get('GITHUB_USERNAME'):
+        custom_config['GITHUB_USERNAME'] = request.form.get('GITHUB_USERNAME')
+    if app.config['GOOGLE_PLUS_PROFILE']!=request.form.get('GOOGLE_PLUS_PROFILE'):
+        custom_config['GOOGLE_PLUS_PROFILE'] = request.form.get('GOOGLE_PLUS_PROFILE')
+    if app.config['TWITTER_HANDLE']!=request.form.get('TWITTER_HANDLE'):
+        custom_config['TWITTER_HANDLE'] = request.form.get('TWITTER_HANDLE')
+    if app.config['CONTACT_EMAIL']!=request.form.get('CONTACT_EMAIL'):
+        custom_config['CONTACT_EMAIL'] = request.form.get('CONTACT_EMAIL')
+    if app.config['BLOG_TITLE']!=request.form.get('BLOG_TITLE'):
+        custom_config['BLOG_TITLE'] = request.form.get('BLOG_TITLE')
+    if app.config['BLOG_TAGLINE']!=request.form.get('BLOG_TAGLINE'):
+        custom_config['BLOG_TAGLINE'] = request.form.get('BLOG_TAGLINE')
+    if app.config['BLOG_URL']!=request.form.get('BLOG_URL'):
+        custom_config['BLOG_URL'] = request.form.get('BLOG_URL')
+    if app.config['FONT_NAME']!=request.form.get('FONT_NAME'):
+        custom_config['FONT_NAME'] = request.form.get('FONT_NAME')
+
+    for i in custom_config:
+        if custom_config[i]:
+            updateSettingFile(i,custom_config[i])
+
+    return jsonify(success=True)
+
+def updateSettingFile(paraName,paraValue):
+    oldFile = open('settings_custom.py')
+    oldFileContent = oldFile.read()
+    oldFile.close()
+    # replace the new field
+    newFileContent = re.sub(paraName+" = '"+app.config[paraName]+"'",str(paraName+" = '"+ paraValue+"'"), oldFileContent)
+
+    if newFileContent != oldFileContent and newFileContent != None:
+        open('settings_custom.py', 'wb').write(newFileContent)
 
 @app.route("/posts.rss")
 def feed():

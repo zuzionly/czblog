@@ -55,6 +55,46 @@ function issueSaveAjax(id, redirect){
     })
 }
 
+function save_settings(redirect){
+    var sPOSTS_PER_PAGE = $("#POSTS_PER_PAGE").val();
+    var sPOST_CONTENT_ON_HOMEPAGE = $("#POST_CONTENT_ON_HOMEPAGE").val();
+    var sSHOW_VIEWS_ON_HOMEPAGE = $("#SHOW_VIEWS_ON_HOMEPAGE").val();
+    var sANALYTICS_ID = $("#ANALYTICS_ID").val();
+    var sGITHUB_USERNAME = $("#GITHUB_USERNAME").val();
+    var sGOOGLE_PLUS_PROFILE = $("#GOOGLE_PLUS_PROFILE").val();
+    var sTWITTER_HANDLE = $("#TWITTER_HANDLE").val();
+    var sCONTACT_EMAIL = $("#CONTACT_EMAIL").val();
+    var sBLOG_TITLE = $("#BLOG_TITLE").val();
+    var sBLOG_TAGLINE = $("#BLOG_TAGLINE").val();
+    var sBLOG_URL = $("BLOG_URL").val();
+    var sFONT_NAME = $("#FONT_NAME").val();
+    var req = $.ajax({
+        type: "POST",
+        url:"/admin/save/settings",
+        data: {
+        POSTS_PER_PAGE: sPOSTS_PER_PAGE,
+        POST_CONTENT_ON_HOMEPAGE : sPOST_CONTENT_ON_HOMEPAGE,
+        SHOW_VIEWS_ON_HOMEPAGE : sSHOW_VIEWS_ON_HOMEPAGE,
+        ANALYTICS_ID : sANALYTICS_ID,
+        GITHUB_USERNAME : sGITHUB_USERNAME,
+        GOOGLE_PLUS_PROFILE : sGOOGLE_PLUS_PROFILE,
+        TWITTER_HANDLE : sTWITTER_HANDLE,
+        CONTACT_EMAIL : sCONTACT_EMAIL,
+        BLOG_TITLE : sBLOG_TITLE,
+        BLOG_TAGLINE : sBLOG_TAGLINE,
+        BLOG_URL : sBLOG_URL,
+        FONT_NAME : sFONT_NAME
+        }
+    });
+    req.done(function(message)
+    {
+        if (redirect)
+        {
+            //todo
+        }
+    })
+}
+
 $(document).ready(
         $("#post_content").autogrow()
 );
