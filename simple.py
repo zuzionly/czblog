@@ -104,14 +104,14 @@ def index():
     posts_count = posts_master.count()
 
     posts = posts_master\
-                .limit(app.config["POSTS_PER_PAGE"])\
-                .offset(page * app.config["POSTS_PER_PAGE"])\
+                .limit(int(app.config["POSTS_PER_PAGE"]))\
+                .offset(page * int(app.config["POSTS_PER_PAGE"]))\
                 .all()
 
     # Sorry for the verbose names, but this seemed like a sensible
     # thing to do.
-    last_possible_post_on_page = page * app.config["POSTS_PER_PAGE"]\
-                               + app.config["POSTS_PER_PAGE"]
+    last_possible_post_on_page = page * int(app.config["POSTS_PER_PAGE"])\
+                               + int(app.config["POSTS_PER_PAGE"])
     there_is_more = posts_count > last_possible_post_on_page
 
     return render_template("index.html",
@@ -260,7 +260,7 @@ def preview(post_id):
 @requires_authentication
 def settings():
 
-    return render_template("settings.html")
+    return render_template("settings.html",now=datetime.datetime.now(),is_admin=is_admin())
 
 @app.route("/admin/save/settings", methods=["POST"])
 @requires_authentication
@@ -305,7 +305,7 @@ def save_settings():
 
     for i in custom_config:
         if custom_config[i]:
-            updateSettingFile(i,custom_config[i])
+            updateSettingFile(i,str(custom_config[i]))
 
     return jsonify(success=True)
 
@@ -314,8 +314,11 @@ def updateSettingFile(paraName,paraValue):
     oldFileContent = oldFile.read()
     oldFile.close()
     # replace the new field
-    newFileContent = re.sub(paraName+" = '"+app.config[paraName]+"'",str(paraName+" = '"+ paraValue+"'"), oldFileContent)
+    newFileContent = re.sub(paraName+''' = "'''+str(app.config[paraName])+'''"''', paraName+''' = "'''+ paraValue+'''"''', oldFileContent)
 
+    print(paraName+''' = "'''+str(app.config[paraName])+'''"''')
+    print(paraName+''' = "'''+ paraValue+'''"''')
+    print(newFileContent)
     if newFileContent != oldFileContent and newFileContent != None:
         open('settings_custom.py', 'wb').write(newFileContent)
 
