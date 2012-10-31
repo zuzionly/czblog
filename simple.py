@@ -4,6 +4,7 @@
 import re
 import datetime
 import os
+import traceback
 from functools import wraps
 from unicodedata import normalize
 
@@ -27,13 +28,19 @@ except Exception,e:
     print "Error: %s"%e
     cache = NullCache()
 
-
-
 _punct_re = re.compile(r'[\t !"#$%&\'()*\-/<=>?@\[\\\]^_`{|},.]+')
 
 MARKDOWN_PARSER = markdown.Markdown(extensions=['fenced_code'],
                                     output_format="html5",
                                     safe_mode=True)
+
+
+
+def trace_back():
+    try:
+        return traceback.format_exc()
+    except:
+        return ''
 
 class Post(db.Model):
     def __init__(self, title=None, created_at=None):
@@ -70,6 +77,7 @@ class Post(db.Model):
 try:
     db.create_all()
 except Exception:
+    app.logger.error('exception caught: ' + trace_back())
     pass
 
 def is_admin():
@@ -133,6 +141,9 @@ def view_post(post_id):
     try:
         post = db.session.query(Post).filter_by(id=post_id, draft=False).one()
     except Exception:
+        app.logger.error(datetime.datetime.now())
+        app.logger.error('exception caught: ' + trace_back())
+        app.logger.error('Post id:'+str(post_id))
         return abort(404)
 
     db.session.query(Post)\
@@ -148,6 +159,9 @@ def view_post_slug(slug):
         post = db.session.query(Post).filter_by(slug=slug,draft=False).one()
     except Exception:
         #TODO: Better exception
+        app.logger.error(datetime.datetime.now())
+        app.logger.error('exception caught: ' + trace_back())
+        app.logger.error('slug:'+slug)
         return abort(404)
 
     if not any(botname in request.user_agent.string for botname in
@@ -181,6 +195,9 @@ def edit(post_id):
         post = db.session.query(Post).filter_by(id=post_id).one()
     except Exception:
         #TODO: better exception
+        app.logger.error(datetime.datetime.now())
+        app.logger.error('exception caught: ' + trace_back())
+        app.logger.error('Post id:'+str(posd_id))
         return abort(404)
 
     if request.method == "GET":
@@ -208,6 +225,9 @@ def delete(post_id):
         post = db.session.query(Post).filter_by(id=post_id).one()
     except Exception:
         # TODO: define better exceptions for db failure.
+        app.logger.error(datetime.datetime.now())
+        app.logger.error('exception caught: ' + trace_back())
+        app.logger.error('Post id:'+str(post_id))
         flash("Error deleting post ID %s"%post_id, category="error")
     else:
         db.session.delete(post)
@@ -235,6 +255,9 @@ def save_post(post_id):
         post = db.session.query(Post).filter_by(id=post_id).one()
     except Exception:
         # TODO Better exception
+        app.logger.error(datetime.datetime.now())
+        app.logger.error('exception caught: ' + trace_back())
+        app.logger.error('Post id:'+post_id)
         return abort(404)
     if post.title != request.form.get("title", ""):
         post.title = request.form.get("title","")
@@ -252,6 +275,9 @@ def preview(post_id):
         post = db.session.query(Post).filter_by(id=post_id).one()
     except Exception:
         # TODO: Better exception
+        app.logger.error(datetime.datetime.now())
+        app.logger.error('exception caught: ' + trace_back())
+        app.logger.error('Post id:'+post_id)
         return abort(404)
 
     return render_template("post_preview.html", post=post)
@@ -278,33 +304,10 @@ def save_settings():
                      'BLOG_URL':None,\
                      'FONT_NAME':None}
     # only save changed value
-    if app.config['POSTS_PER_PAGE']!=request.form.get('POSTS_PER_PAGE',0):
-        custom_config['POSTS_PER_PAGE'] = request.form.get('POSTS_PER_PAGE',0)
-    if app.config['POST_CONTENT_ON_HOMEPAGE']!=request.form.get('POST_CONTENT_ON_HOMEPAGE',0):
-        custom_config['POST_CONTENT_ON_HOMEPAGE'] = request.form.get('POST_CONTENT_ON_HOMEPAGE',0)
-    if app.config['SHOW_VIEWS_ON_HOMEPAGE']!=request.form.get('SHOW_VIEWS_ON_HOMEPAGE'):
-        custom_config['SHOW_VIEWS_ON_HOMEPAGE'] = request.form.get('SHOW_VIEWS_ON_HOMEPAGE')
-    if app.config['ANALYTICS_ID']!=request.form.get('ANALYTICS_ID'):
-        custom_config['ANALYTICS_ID'] = request.form.get('ANALYTICS_ID')
-    if app.config['GITHUB_USERNAME']!=request.form.get('GITHUB_USERNAME'):
-        custom_config['GITHUB_USERNAME'] = request.form.get('GITHUB_USERNAME')
-    if app.config['GOOGLE_PLUS_PROFILE']!=request.form.get('GOOGLE_PLUS_PROFILE'):
-        custom_config['GOOGLE_PLUS_PROFILE'] = request.form.get('GOOGLE_PLUS_PROFILE')
-    if app.config['TWITTER_HANDLE']!=request.form.get('TWITTER_HANDLE'):
-        custom_config['TWITTER_HANDLE'] = request.form.get('TWITTER_HANDLE')
-    if app.config['CONTACT_EMAIL']!=request.form.get('CONTACT_EMAIL'):
-        custom_config['CONTACT_EMAIL'] = request.form.get('CONTACT_EMAIL')
-    if app.config['BLOG_TITLE']!=request.form.get('BLOG_TITLE'):
-        custom_config['BLOG_TITLE'] = request.form.get('BLOG_TITLE')
-    if app.config['BLOG_TAGLINE']!=request.form.get('BLOG_TAGLINE'):
-        custom_config['BLOG_TAGLINE'] = request.form.get('BLOG_TAGLINE')
-    if app.config['BLOG_URL']!=request.form.get('BLOG_URL'):
-        custom_config['BLOG_URL'] = request.form.get('BLOG_URL')
-    if app.config['FONT_NAME']!=request.form.get('FONT_NAME'):
-        custom_config['FONT_NAME'] = request.form.get('FONT_NAME')
 
     for i in custom_config:
-        if custom_config[i]:
+        if(app.config[i]!= request.form.get(i)):
+            custom_config[i] = request.form.get(i)
             updateSettingFile(i,str(custom_config[i]))
 
     return jsonify(success=True)
@@ -315,10 +318,10 @@ def updateSettingFile(paraName,paraValue):
     oldFile.close()
     # replace the new field
     newFileContent = re.sub(paraName+''' = "'''+str(app.config[paraName])+'''"''', paraName+''' = "'''+ paraValue+'''"''', oldFileContent)
-
-    print(paraName+''' = "'''+str(app.config[paraName])+'''"''')
-    print(paraName+''' = "'''+ paraValue+'''"''')
-    print(newFileContent)
+##    for testing
+##    print(paraName+''' = "'''+str(app.config[paraName])+'''"''')
+##    print(paraName+''' = "'''+ paraValue+'''"''')
+##    print(newFileContent)
     if newFileContent != oldFileContent and newFileContent != None:
         open('settings_custom.py', 'wb').write(newFileContent)
 
