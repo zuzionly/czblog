@@ -21,6 +21,9 @@
         <div class="post_container">
             <div class="post_header">
                 <h1>{{ post.title }}</h1>
+                {% if is_admin %}
+                <a href="{{ url_for('edit', post_id=post.id) }}"><span class="label label-inverse">edit</span></span></a>
+                {% endif%}
             </div>
             <br/>
             {{ post.render_content()|safe }}
@@ -29,8 +32,6 @@
             {% endif %}
         </div>
 
-        <br/>
-        <a class="btn btn-inverse" href="{{ url_for('index') }}">Back to Blog</a>
         <br/>
     </section>
     <!--disqus section-->
