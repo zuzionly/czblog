@@ -7,13 +7,13 @@ Installation
 ============
 
 ###Prerequisite
->pip install -r requirements.txt.
+    pip install -r requirements.txt.
 
 ###Customize the Configuration
->python create_config.py
+    python create_config.py
 
 ###Run
->python simple.py
+    python simple.py
 
 Deployment
 ============
@@ -21,6 +21,16 @@ Deploying Simple is easy. Simply clone this repo (or your own) and install [Guni
 Then cd to the directory containing simple.py and run the following command:
 ``gunicorn -w 4 simple:app``
 This will start 4 gunicorn workers serving Simple. You can then use nginx or apache to forward requests to Gunicorn.
+
+watch dog 
+=============
+######listen python file change and auto restart gunicorn(gunicorn no auto restart option)
+
+###install:
+    pip install watchdog
+###command line:
+    watchmedo shell-command --patterns="*.py" --recursive --command='kill -HUP `cat /tmp/gunicorn.pid`' /simple
+
 
 Example
 ============
