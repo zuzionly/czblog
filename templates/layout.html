@@ -1,5 +1,4 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+﻿<html lang="en">
     <head>
         {% block title%}{% endblock %}
         <meta charset="utf-8">
@@ -29,51 +28,53 @@
         <div id="wrap">
             <div class="container">
                 <div class="masthead">
-                    <ul class="nav nav-pills pull-right" id="TopTap">
+
+                    <ul class="nav nav-tabs pull-right">
                     <!--<ul class="breadcrumb pull-right">-->
-                        <li class="active"><a id="Home" href="{{ url_for('index') }}" class="btn btn-inverse">Home</a></li>
-                        <!-- Button to trigger modal -->
-                        <li><a href="#" role="button" class="btn btn-inverse" data-toggle="modal" data-target="#Contact">Contact</a></li>
-                        <!-- Modal -->
-                        <div id="Contact" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-                            <div class="modal-header">
-                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                                <h3 id="myModalLabel">Contact me</h3>
-                            </div>
-                            <div class="modal-body">
-                                <ul>
-                                    {% if config.GITHUB_USERNAME %}
-                                        <li><p><a href="https://github.com/{{ config.GITHUB_USERNAME }}/">Github</a></p></li>
-                                    {% endif %}
-                                    {% if config.CONTACT_EMAIL %}
-                                        <li><p><p><a href="mailto:{{ config.CONTACT_EMAIL }}?subject:Howdy">Email me</a></p></li>
-                                    {% endif %}
-                                    {% if config.TWITTER_HANDLE %}
-                                        <li><p><a href="https://twitter.com/{{ config.TWITTER_HANDLE }}/">Twitter</a></p></li>
-                                    {% endif %}
-                                    {% if config.GOOGLE_PLUS_PROFILE %}
-                                        <li><p><a href="https://plus.google.com/{{ config.GOOGLE_PLUS_PROFILE }}/posts">Google+</a></p></li>
-                                    {% endif %}
-                                    <li>
-                                        <p><a href="{{ url_for('feed') }}">Feed</a></p>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div class="modal-footer">
-                                <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
-                            </div>
-                        </div>
+                        <li id="home"><a href="{{ url_for('index') }}" class="button">Home</a></li>
                         {% if is_admin %}
-                        <li>
-                            <a href="{{ url_for('admin') }}" class="btn btn-inverse">Manage posts</a>
+                        <li id="admin">
+                            <a href="{{ url_for('admin') }}" class="button">Manage posts</a>
                         </li>
-                        <li>
-                            <a href="{{ url_for('settings') }}" class="btn btn-inverse">Settings</a>
+                        <li id="settings">
+                            <a href="{{ url_for('settings') }}" class="button">Settings</a>
                         </li>
                         {% endif %}
                     </ul>
-                    <h2 class="muted"><a href="{{ url_for('index') }}" class="" style="font-family: 'Tangerine', serif;text-shadow: 4px 4px 4px #aaa;">๑۩۞۩๑{{ config.BLOG_TITLE }}</a></h2>
+                    <div class="hidden-phone">
+                    <!-- Button to trigger modal -->
+                    <h2 class="muted"><a id="blog_title" href="#" class="e" data-toggle="modal"  data-target="#Contact" style="font-family: 'Tangerine', serif;text-shadow: 4px 4px 4px #aaa;">๑۩۞۩๑{{ config.BLOG_TITLE }}</a></h2>
+                    <!-- Modal -->
+                    <div id="Contact" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                            <h3 id="myModalLabel">Contact me</h3>
+                        </div>
+                        <div class="modal-body">
+                            <ul>
+                                {% if config.GITHUB_USERNAME %}
+                                    <li><p><a href="https://github.com/{{ config.GITHUB_USERNAME }}/">Github</a></p></li>
+                                {% endif %}
+                                {% if config.CONTACT_EMAIL %}
+                                    <li><p><p><a href="mailto:{{ config.CONTACT_EMAIL }}?subject:Howdy">Email me</a></p></li>
+                                {% endif %}
+                                {% if config.TWITTER_HANDLE %}
+                                    <li><p><a href="https://twitter.com/{{ config.TWITTER_HANDLE }}/">Twitter</a></p></li>
+                                {% endif %}
+                                {% if config.GOOGLE_PLUS_PROFILE %}
+                                    <li><p><a href="https://plus.google.com/{{ config.GOOGLE_PLUS_PROFILE }}/posts">Google+</a></p></li>
+                                {% endif %}
+                                <li>
+                                    <p><a href="{{ url_for('feed') }}">Feed</a></p>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="modal-footer">
+                            <button id="btn_contact" class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+                        </div>
+                    </div>
                     <span>{{ config.BLOG_TAGLINE }}</span>
+                    </div>
                     <time>
                         {% if post %}
                             Posted {{ post.created_at.strftime('%B %d, %Y') }}
@@ -90,6 +91,7 @@
                             </div>
                         {% endif %}
                     </time>
+
                     </div><!-- end masthead-->
                     <hr>
 

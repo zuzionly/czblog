@@ -282,13 +282,13 @@ def preview(post_id):
 
     return render_template("post_preview.html", post=post)
 
-@app.route("/admin/settings")
+@app.route("/settings")
 @requires_authentication
 def settings():
 
     return render_template("settings.html",now=datetime.datetime.now(),is_admin=is_admin())
 
-@app.route("/admin/save/settings", methods=["POST"])
+@app.route("/settings/save", methods=["POST"])
 @requires_authentication
 def save_settings():
     custom_config = {'POSTS_PER_PAGE':None,\
@@ -318,7 +318,7 @@ def updateSettingFile(paraName,paraValue):
     oldFile.close()
     # replace the new field
     newFileContent = re.sub(paraName+''' = "'''+str(app.config[paraName])+'''"''', paraName+''' = "'''+ paraValue+'''"''', oldFileContent)
-##    for testing
+##    #for testing
 ##    print(paraName+''' = "'''+str(app.config[paraName])+'''"''')
 ##    print(paraName+''' = "'''+ paraValue+'''"''')
 ##    print(newFileContent)

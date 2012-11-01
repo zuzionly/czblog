@@ -10,7 +10,7 @@
 
     <div class="page-header">
     <h1>Settings <small> -- config or something else</small></h1>
-    <form id="settings" class="form-horizontal" action="/admin/save/settings" method="POST">
+    <form id="settings" class="form-horizontal" action="{{ url_for('save_settings') }}" method="POST">
         <fieldlist>
             <div class="control-group">
                 <label class="control-label" for="POSTS_PER_PAGE">Post per page</label>

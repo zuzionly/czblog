@@ -69,7 +69,7 @@ function save_settings(redirect){
     var sFONT_NAME = $("#FONT_NAME").val();
     var req = $.ajax({
         type: "POST",
-        url:"/admin/save/settings",
+        url:"/settings/save",
         data: {
         POSTS_PER_PAGE: sPOSTS_PER_PAGE,
         POST_CONTENT_ON_HOMEPAGE : sPOST_CONTENT_ON_HOMEPAGE,
@@ -94,9 +94,24 @@ function save_settings(redirect){
 };
 
 
+// run on load
 $(function(){
     $('pre').addClass('prettyprint').addClass("linenums");
     prettyPrint();
+
+    //start bind tabs
+    //get current uri
+    var url = window.location.href
+    //get path
+    var path = url.split('/')[3];
+    if(''== path || 'post' == path){
+        $('#home').addClass('active');
+    }else if('admin'== path || 'edit' == path){
+        $('#admin').addClass('active');
+    }else if('settings'==path){
+        $('#settings').addClass('active');
+    }
+    //end bind tab
 });
 
 $('div').delegate('#modal-from-delete', 'show', function() {
@@ -105,6 +120,12 @@ $('div').delegate('#modal-from-delete', 'show', function() {
         href = removeBtn.attr('href');
 
     removeBtn.attr('href', 'delete/'+id);
+});
+
+$('#btn_contact').click(function(e) {
+    e.preventDefault();
+
+    $('#blog_title').blur();
 });
 
 
