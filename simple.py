@@ -201,7 +201,7 @@ def edit(post_id):
         return abort(404)
 
     if request.method == "GET":
-        return render_template("edit.html", post=post)
+        return render_template("edit.html", post=post,is_admin=is_admin())
     else:
         if post.title != request.form.get("post_title", ""):
             post.title = request.form.get("post_title","")
@@ -246,7 +246,7 @@ def admin():
     posts  = db.session.query(Post)\
                  .filter_by(draft=False)\
                  .order_by(Post.created_at.desc()).all()
-    return render_template("admin.html", drafts=drafts, posts=posts)
+    return render_template("admin.html", drafts=drafts, posts=posts, now=datetime.datetime.now(), is_admin=is_admin())
 
 @app.route("/admin/save/<int:post_id>", methods=["POST"])
 @requires_authentication

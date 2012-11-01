@@ -1,45 +1,65 @@
-{% extends "admin_template.html" %}
+﻿<!DOCTYPE html>
+{% extends "layout.html" %}
 
-{% block css %}
-<link href="{{ url_for('static', filename='css/_normalize.css') }}" type="text/css" media="screen" rel="stylesheet">
-<link href="{{ url_for('static', filename='css/posts.css') }}" type="text/css" media="screen" rel="stylesheet">
-{% endblock %}
+{% block title %}<title>Admin panel</title>{% endblock%}
 
-{% block content %}
-<div id="drafts" class="col">
-    <h1>Drafts <a href="#" class="button" onclick="$('#new_post').submit()">New draft</a></h1>
-    <form id=new_post action="{{ url_for('new_post') }}" method="post">
-        <input name="post_title" id="post_title" type="text" size=30 placeholder="Start typing an idea here">
-    </form>
-    <ul>
-        {% for draft in drafts %}
-            <li id="post-{{ draft.id }}">
-                <h3>
-                    <a href="{{ url_for('edit', post_id=draft.id) }}">{{ draft.title }}</a>
-                        <span class="links">
-                            <a href="{{ url_for('delete', post_id=draft.id) }}" class="admin-delete" data-confirm="Are you sure?" rel="nofollow">x</a>
-                        </span>
-                </h3>
-            </li>
-        {% endfor %}
-    </ul>
-</div>
-
-<div id="published" class="col">
-    <h2>Published <a href="{{ url_for('index') }}" class="button">Home</a></h2>
-    <ul>
+{% block content%}
+<div class="row">
+    <div id="drafts" class="span4">
+        <h1>Drafts</h1>
+        <form id=new_post action="{{ url_for('new_post') }}" method="post">
+            <div class="input-append">
+                <input class="input-large" name="post_title" id="post_title" type="text" size=30 placeholder="Start typing an idea here">
+                <button class="btn" onclick="$('#new_post').submit()">New draft</a>
+            </div>
+        </form>
+        <table class="table-hover">
+          <caption></caption>
+          <tbody>
+            {% for draft in drafts %}
+            <tr id="draft-{{ draft.id }}">
+              <td class="span3"><a href="{{ url_for('edit', post_id=draft.id) }}"><span class="label label-inverse">{{ draft.title }}</span></span></a></td>
+              <td></td>
+              <td class="span1">
+                  <span class="links">
+                      <a href="#" data-id={{ draft.id }}  class="confirm-delete" ><span class="badge badge-inverse">×</span></a>
+                  </span>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+    </div><!-- end drafts-->
+    <div id="published" class="span6">
+    <h1>Published</h1>
+    <table class="table-hover">
+      <caption></caption>
+      <tbody>
         {% for post in posts %}
-            <li id="post-{{ post.id }}">
-                <h3>
-                    <a href="{{ url_for('edit', post_id=post.id) }}">{{ post.title }}</a>
-                        <span class="links">
-                            <a href="{{ url_for('view_post_slug', slug=post.slug) }}" class="admin-view">view</a>
-                            <a href="{{ url_for('delete', post_id=post.id) }}" class="admin-delete" data-confirm="Are you sure?"
-                               data-method="delete" rel="nofollow">x</a>
-                        </span>
-                </h3>
-            </li>
+        <tr id="post-{{ post.id }}">
+          <td class="span6"><a href="{{ url_for('edit', post_id=post.id) }}"><span class="label label-inverse">{{ post.title }}</span></span></a></td>
+          <td class="span1">
+                  <a href="{{ url_for('view_post_slug', slug=post.slug) }}" class="admin-view"><span class="label label-inverse">view</span></a>
+                  <a href="#" data-id={{ post.id }} class="confirm-delete"><span class="badge badge-inverse">×</span></a>
+          </td>
+        </tr>
         {% endfor %}
-    </ul>
+      </tbody>
+    </table>
+    </div><!-- end published-->
+</div><!--end row inner -->
+<div id="modal-from-delete" class="modal hide fade">
+    <div class="modal-header">
+      <a href="#" class="close">&times;</a>
+      <h3>Delete URL</h3>
+    </div>
+    <div class="modal-body">
+      <p>You are about to delete one track url, this procedure is irreversible.</p>
+      <p>Do you want to proceed?</p>
+    </div>
+    <div class="modal-footer">
+      <a href="delete.php?ref=" class="btn danger">Yes</a>
+      <a href="javascript:$('#modal-from-delete').modal('hide')" class="btn secondary">No</a>
+    </div>
 </div>
-{% endblock %}
+{% endblock%}

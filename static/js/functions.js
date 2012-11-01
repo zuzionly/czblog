@@ -1,4 +1,4 @@
-$.fn.autogrow = function(options) {
+﻿$.fn.autogrow = function(options) {
 
     this.filter('textarea').each(function() {
 
@@ -53,7 +53,7 @@ function issueSaveAjax(id, redirect){
             var win = window.open("/preview/"+id, '_blank');
         }
     })
-}
+};
 
 function save_settings(redirect){
     var sPOSTS_PER_PAGE = $("#POSTS_PER_PAGE").val();
@@ -91,8 +91,26 @@ function save_settings(redirect){
             //todo
         }
     })
-}
+};
 
-$(document).ready(
-        $("#post_content").autogrow()
-);
+
+$(function(){
+    $('pre').addClass('prettyprint').addClass("linenums");
+    prettyPrint();
+});
+
+$('div').delegate('#modal-from-delete', 'show', function() {
+    var id = $(this).data('id'),
+        removeBtn = $(this).find('.danger'),
+        href = removeBtn.attr('href');
+
+    removeBtn.attr('href', 'delete/'+id);
+});
+
+
+$('.confirm-delete').click(function(e) {
+    e.preventDefault();
+
+    var id = $(this).data('id');
+    $('#modal-from-delete').data('id', id).modal('show');
+});

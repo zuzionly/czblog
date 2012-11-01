@@ -1,5 +1,5 @@
 /*!
- * Bootstrap v2.2.0
+ * Bootstrap v2.2.1
  *
  * Copyright 2012 Twitter, Inc
  * Licensed under the Apache License v2.0
@@ -168,13 +168,15 @@ body {
 }
 
 a {
-  color: #0088cc;
+  /*color: #0088cc;*/
+  color: #000000;
   text-decoration: none;
 }
 
 a:hover {
-  color: #005580;
-  text-decoration: underline;
+  color: #9d261d;
+  /*color: #005580;*/
+  /*text-decoration: underline;*/
 }
 
 .img-rounded {
