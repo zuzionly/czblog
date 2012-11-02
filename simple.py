@@ -129,6 +129,13 @@ def index():
                            current_page=page,
                            is_admin=is_admin())
 
+@app.route("/guestbook")
+def guestbook():
+
+    return render_template("guestbook.html",
+                           now=datetime.datetime.now(),
+                           is_admin=is_admin())
+
 @app.route("/style.css")
 def render_font_style():
     t = render_template("font_style.css",

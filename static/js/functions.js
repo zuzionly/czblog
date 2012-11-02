@@ -96,7 +96,7 @@ function save_settings(redirect){
 
 // run on load
 $(function(){
-    $('pre').addClass('prettyprint').addClass("linenums");
+    $('pre').addClass('prettyprint').addClass("linenums").addClass('pre-scrollable');
     prettyPrint();
 
     //start bind tabs
@@ -110,6 +110,8 @@ $(function(){
         $('#admin').addClass('active');
     }else if('settings'==path){
         $('#settings').addClass('active');
+    }else if('guestbook'==path){
+        $('#guestbook').addClass('active');
     }
     //end bind tab
 });

@@ -40,6 +40,9 @@
                             <a href="{{ url_for('settings') }}" class="button">Settings</a>
                         </li>
                         {% endif %}
+                        <li id="guestbook">
+                            <a href="{{ url_for('guestbook') }}" class="button">Guest Book</a>
+                        </li>
                     </ul>
                     <div class="hidden-phone">
                     <!-- Button to trigger modal -->
@@ -47,7 +50,7 @@
                     <!-- Modal -->
                     <div id="Contact" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
                         <div class="modal-header">
-                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                            <button type="btn" class="close" data-dismiss="modal" aria-hidden="true">×</button>
                             <h3 id="myModalLabel">Contact me</h3>
                         </div>
                         <div class="modal-body">
@@ -70,7 +73,7 @@
                             </ul>
                         </div>
                         <div class="modal-footer">
-                            <button id="btn_contact" class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+                            <button id="btn_contact" class="btn btn-inverse" data-dismiss="modal" aria-hidden="true">Close</button>
                         </div>
                     </div>
                     <span>{{ config.BLOG_TAGLINE }}</span>
@@ -116,7 +119,6 @@
             </div>
         </footer>
         <!-- end footer content -->
-
     </body>
     <script src="{{ url_for('static', filename='js/jquery-1.7.2.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
@@ -135,4 +137,16 @@
         });
     </script>
     <!-- end pager section-->
+    <!-- google analytics-->
+    {% if config["ANALYTICS_ID"]  %}
+        <script>
+            var _gaq=[['_setAccount','{{ config["ANALYTICS_ID"] }}'],['_setDomainName','.chuan7i.com'],['_trackPageview']];
+            (function() {
+        		var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        		ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        		var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        	  })();
+        </script>
+     {% endif %}
+     <!-- end google analytics-->
 </html>

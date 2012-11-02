@@ -10,16 +10,15 @@
         <form id=new_post action="{{ url_for('new_post') }}" method="post">
             <div class="input-append">
                 <input class="input-large" name="post_title" id="post_title" type="text" size=30 placeholder="Start typing an idea here">
-                <button class="btn" onclick="$('#new_post').submit()">New draft</a>
+                <button class="btn btn-inverse" onclick="$('#new_post').submit()">New draft</a>
             </div>
         </form>
-        <table class="table-hover">
+        <table class="table-hover table table-striped table-bordered table-condensed">
           <caption></caption>
           <tbody>
             {% for draft in drafts %}
             <tr id="draft-{{ draft.id }}">
               <td class="span3"><a href="{{ url_for('edit', post_id=draft.id) }}"><span class="label label-inverse">{{ draft.title }}</span></span></a></td>
-              <td></td>
               <td class="span1">
                   <span class="links">
                       <a href="#" data-id={{ draft.id }}  class="confirm-delete" ><span class="badge badge-inverse">×</span></a>
@@ -30,15 +29,16 @@
           </tbody>
         </table>
     </div><!-- end drafts-->
+    <div class="span1"></div>
     <div id="published" class="span6">
     <h1>Published</h1>
-    <table class="table-hover">
+    <table class="table-hover table table-striped table-bordered table-condensed">
       <caption></caption>
       <tbody>
         {% for post in posts %}
         <tr id="post-{{ post.id }}">
           <td class="span6"><a href="{{ url_for('edit', post_id=post.id) }}"><span class="label label-inverse">{{ post.title }}</span></span></a></td>
-          <td class="span1">
+          <td class="span2">
                   <a href="{{ url_for('view_post_slug', slug=post.slug) }}" class="admin-view"><span class="label label-inverse">view</span></a>
                   <a href="#" data-id={{ post.id }} class="confirm-delete"><span class="badge badge-inverse">×</span></a>
           </td>
