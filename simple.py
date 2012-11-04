@@ -136,6 +136,13 @@ def guestbook():
                            now=datetime.datetime.now(),
                            is_admin=is_admin())
 
+@app.route("/about")
+def about():
+
+    return render_template("about.html",
+                           now=datetime.datetime.now(),
+                           is_admin=is_admin())
+
 @app.route("/style.css")
 def render_font_style():
     t = render_template("font_style.css",

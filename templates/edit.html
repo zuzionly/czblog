@@ -45,7 +45,7 @@
                                     Preview
                                 </a>
                                 {% else %}
-                                <a class="btn btn-inverse" href="{{  url_for('view_post_slug', slug=post.slug) }}"
+                                <a class="btn btn-inverse" href="{{  url_for('view_post_slug', slug=post.slug) }}" data-pjax="{{  url_for('view_post_slug', slug=post.slug) }}"
                                 target="_blank">
                                     View live
                                 </a>

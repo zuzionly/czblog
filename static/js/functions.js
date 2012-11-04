@@ -98,7 +98,12 @@ function save_settings(redirect){
 $(function(){
     $('pre').addClass('prettyprint').addClass("linenums").addClass('pre-scrollable');
     prettyPrint();
+
     bindTabs();
+    $(document)
+      //.on('pjax:start', function() { $('#loading').show() })
+      .on('pjax:end',   function() { bindTabs(); })
+
 });
 
 function bindTabs(){
@@ -119,6 +124,9 @@ function bindTabs(){
     }else if('guestbook'==path){
         $('#guestbook').addClass('active');
         $("#nav_tab > li[id!=guestbook]").removeClass('active');
+    }else if('about'==path){
+        $('#about').addClass('active');
+        $("#nav_tab > li[id!=about]").removeClass('active');
     }
     //end bind tab
 }
@@ -147,7 +155,6 @@ $('div').delegate('#modal-from-delete', 'show', function() {
 
     removeBtn.attr('href', 'delete/'+id);
 });
-
 
 $('.confirm-delete').click(function(e) {
     e.preventDefault();

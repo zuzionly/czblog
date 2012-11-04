@@ -19,7 +19,7 @@
                     </div>
                     <div class="span1">
                         {% if is_admin %}
-                        <a href="{{ url_for('edit', post_id=post.id) }}"><span class="label label-inverse">edit</span></span></a>
+                        <a href="{{ url_for('edit', post_id=post.id) }} " data-pjax="{{ url_for('edit', post_id=post.id) }}"><span class="label label-inverse">edit</span></span></a>
                         {% endif%}
                     </div>
                 </div>

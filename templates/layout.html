@@ -40,6 +40,9 @@
                     <ul id="nav_tab" class="nav nav-tabs pull-right">
                     <!--<ul class="breadcrumb pull-right">-->
                         <li id="home"><a href="{{ url_for('index') }}" class="button" rel="nav" data-pjax="{{ url_for('index') }}">Home</a></li>
+                        <li id="about">
+                            <a href="{{ url_for('about') }}" class="button" rel="nav" data-pjax="{{ url_for('about') }}">About</a>
+                        </li>
                         {% if is_admin %}
                         <li id="admin">
                             <a href="{{ url_for('admin') }}" class="button" rel="nav" data-pjax="{{ url_for('admin') }}">Manage posts</a>
@@ -54,8 +57,8 @@
                     </ul>
                     <div class="hidden-phone">
                     <!-- Button to trigger modal -->
-                    <h2 class="muted"><a id="blog_title" href="#" class="e" data-toggle="modal"  data-target="#Contact" style="font-family: 'Tangerine', serif;text-shadow: 4px 4px 4px #aaa;">๑۩۞۩๑{{ config.BLOG_TITLE }}</a></h2>
-                    <!-- Modal -->
+                    <h2 class="muted"><a id="blog_title" href="{{ url_for('index') }}" data-pjax="{{ url_for('index') }}" style="font-family: 'Tangerine', serif;text-shadow: 4px 4px 4px #aaa;">๑۩۞۩๑{{ config.BLOG_TITLE }}</a></h2>
+                    <!-- Modal
                     <div id="Contact" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
                         <div class="modal-header">
                             <button type="btn" class="close" data-dismiss="modal" aria-hidden="true">×</button>
@@ -83,7 +86,7 @@
                         <div class="modal-footer">
                             <button id="btn_contact" class="btn btn-inverse" data-dismiss="modal" aria-hidden="true">Close</button>
                         </div>
-                    </div>
+                    </div>-->
                     <span>{{ config.BLOG_TAGLINE }}</span>
                     </div>
                     <time>
@@ -106,10 +109,8 @@
                     </div><!-- end masthead-->
                     <hr>
                 <div id="main-content">
-
 {% endif %}
                 {% block content%}{% endblock %}
-
 {% if "X-PJAX" not in request.headers %}
 
                 </div><!-- end main-content-->
