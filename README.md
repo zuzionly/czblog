@@ -19,7 +19,9 @@ Deployment
 ============
 Deploying Simple is easy. Simply clone this repo (or your own) and install [Gunicorn](http://gunicorn.org/).
 Then cd to the directory containing simple.py and run the following command:
-``gunicorn -w 4 simple:app``
+
+    venv/bin/gunicorn -w 4 -p /tmp/gunicorn.pid simple:app 
+
 This will start 4 gunicorn workers serving Simple. You can then use nginx or apache to forward requests to Gunicorn.
 
 watch dog 
