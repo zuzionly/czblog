@@ -142,16 +142,6 @@
     <script src="{{ url_for('static', filename='js/pjax.js') }}"></script>
     <!-- pager section-->
     <script src="{{ url_for('static', filename='js/jquery.ias.min.js') }}" type="text/javascript"></script>
-    <script>
-        jQuery.ias({
-        	container : '.listing',
-        	item: '.post',
-        	pagination: '.pager',
-        	next: '.next a',
-        	loader: '<img src='+"{{ url_for('static', filename='img/loader.gif') }}"+'/>',
-            noneleft:true
-        });
-    </script>
     <!-- end pager section-->
     <!-- google analytics-->
     {% if config["ANALYTICS_ID"]  %}

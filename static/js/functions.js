@@ -129,6 +129,14 @@ function bindTabs(){
         $("#nav_tab > li[id!=about]").removeClass('active');
     }
     //end bind tab
+    jQuery.ias({
+        	container : '.listing',
+        	item: '.post',
+        	pagination: '.pager',
+        	next: '.next a',
+        	loader: '<img src='+"{{ url_for('static', filename='img/loader.gif') }}"+'/>',
+            noneleft:true
+    });
 }
 
 $('#wrap').delegate('a', 'click', function(e) {
