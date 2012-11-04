@@ -7,7 +7,7 @@
 
 {% block content %}
 
-
+<div class="slider">
     <div class="page-header">
     <h1>Settings <small> -- config or something else</small></h1>
     <form id="settings" class="form-horizontal" action="{{ url_for('save_settings') }}" method="POST">
@@ -136,5 +136,6 @@
             </div>
         </fieldlist>
     </form>
+</div>
 {% endblock %}
 

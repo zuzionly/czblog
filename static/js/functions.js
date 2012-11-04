@@ -98,23 +98,47 @@ function save_settings(redirect){
 $(function(){
     $('pre').addClass('prettyprint').addClass("linenums").addClass('pre-scrollable');
     prettyPrint();
+    bindTabs();
+});
 
-    //start bind tabs
+function bindTabs(){
+
     //get current uri
     var url = window.location.href
     //get path
     var path = url.split('/')[3];
     if(''== path || 'post' == path){
         $('#home').addClass('active');
+        $("#nav_tab > li[id!=home]").removeClass('active');
     }else if('admin'== path || 'edit' == path){
         $('#admin').addClass('active');
+        $("#nav_tab > li[id!=admin]").removeClass('active');
     }else if('settings'==path){
         $('#settings').addClass('active');
+        $("#nav_tab > li[id!=settings]").removeClass('active');
     }else if('guestbook'==path){
         $('#guestbook').addClass('active');
+        $("#nav_tab > li[id!=guestbook]").removeClass('active');
     }
     //end bind tab
-});
+}
+
+$('#wrap').delegate('a', 'click', function(e) {
+        e.preventDefault();
+        var targetUrl = $(this).data('pjax');
+        //get current uri
+        var url = window.location.href
+        //get path
+        var path = url.split('/')[3];
+        if(targetUrl != ("/"+path)){
+            $(".slider").animate({"left":"-=1500px"}, "slow",function(){
+                $.pjax({
+                  url: targetUrl,
+                  container: '#main-content'
+                });
+             });
+         }
+    });
 
 $('div').delegate('#modal-from-delete', 'show', function() {
     var id = $(this).data('id'),
@@ -124,16 +148,9 @@ $('div').delegate('#modal-from-delete', 'show', function() {
     removeBtn.attr('href', 'delete/'+id);
 });
 
-$('#btn_contact').click(function(e) {
-    e.preventDefault();
-
-    $('#blog_title').blur();
-});
-
 
 $('.confirm-delete').click(function(e) {
     e.preventDefault();
-
     var id = $(this).data('id');
     $('#modal-from-delete').data('id', id).modal('show');
 });

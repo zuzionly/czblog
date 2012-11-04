@@ -15,71 +15,73 @@
     })
 </script>
 {% endif %} {% endblock %} {% block content %}
-<div class="container-fluid">
-    <div class="row-fluid">
-        <form accept-charset="UTF-8" action="" class="" id="edit_post" method="post">
-            <div class="span2 offset1">
-                <ul class="nav nav-tabs nav-stacked">
-                    <li>
-                        <p>
-                            <a class="btn btn-inverse" href="{{ url_for('delete', post_id=post.id, next="admin") }}">
-                                Delete
-                            </a>
-                        </p>
-                    </li>
-                    <li>
-                        <p>
-                            <span class="label label-inverse">
-                                Draft
-                            </span>
-                            <input name="post_draft" type="hidden" value="0" />
-                            <input id="post_draft" name="post_draft" type="checkbox" value="1" {% if post.draft %}checked{% endif %} />
-                        </p>
-                    </li>
-                    <li>
-                        <p>
-                            {% if post.draft %}
-                            <a class="btn btn-inverse" href="#" onclick="issueSaveAjax({{ post.id }}, true); return false;"
-                            target="_blank">
-                                Preview
-                            </a>
-                            {% else %}
-                            <a class="btn btn-inverse" href="{{  url_for('view_post_slug', slug=post.slug) }}"
-                            target="_blank">
-                                View live
-                            </a>
-                            {% endif %}
-                        </p>
-                    </li>
-                    <li>
-                        <p>
-                            <button class="btn btn-inverse" onclick="$('#edit_post').submit()">
-                                Save
-                            </button>
-                        </p>
-                    </li>
-                </ul>
-            </div>
+<div class="slider">
+    <div class="container-fluid">
+        <div class="row-fluid">
+            <form accept-charset="UTF-8" action="" class="" id="edit_post" method="post">
+                <div class="span2 offset1">
+                    <ul class="nav nav-tabs nav-stacked">
+                        <li>
+                            <p>
+                                <a class="btn btn-inverse" href="{{ url_for('delete', post_id=post.id, next="admin") }}">
+                                    Delete
+                                </a>
+                            </p>
+                        </li>
+                        <li>
+                            <p>
+                                <span class="label label-inverse">
+                                    Draft
+                                </span>
+                                <input name="post_draft" type="hidden" value="0" />
+                                <input id="post_draft" name="post_draft" type="checkbox" value="1" {% if post.draft %}checked{% endif %} />
+                            </p>
+                        </li>
+                        <li>
+                            <p>
+                                {% if post.draft %}
+                                <a class="btn btn-inverse" href="#" onclick="issueSaveAjax({{ post.id }}, true); return false;"
+                                target="_blank">
+                                    Preview
+                                </a>
+                                {% else %}
+                                <a class="btn btn-inverse" href="{{  url_for('view_post_slug', slug=post.slug) }}"
+                                target="_blank">
+                                    View live
+                                </a>
+                                {% endif %}
+                            </p>
+                        </li>
+                        <li>
+                            <p>
+                                <button class="btn btn-inverse" onclick="$('#edit_post').submit()">
+                                    Save
+                                </button>
+                            </p>
+                        </li>
+                    </ul>
+                </div>
 
-            <div class="span9">
-                <div class="row">
-                    <div class="span10">
-                        <div class="expandingArea text-title">
-                            <input type="text" class="input-block-level" id="post_title" name="post_title" placeholder="Title here" value="{{ post.title }}">
+                <div class="span9">
+                    <div class="row">
+                        <div class="span10">
+                            <div class="expandingArea text-title">
+                                <input type="text" class="input-block-level" id="post_title" name="post_title" placeholder="Title here" value="{{ post.title }}">
 
-                            </input>
+                                </input>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="span10">
+                            <div class="expandingArea text-content" id="edit_post_area">
+                                <textarea rows="40" class="input-block-level" id="post_content" name="post_content" placeholder="Write post here">{{ post.text }}</textarea>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="span10">
-                        <div class="expandingArea text-content" id="edit_post_area">
-                            <textarea rows="40" class="input-block-level" id="post_content" name="post_content" placeholder="Write post here">{{ post.text }}</textarea>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
 </div>
 {% endblock %}
