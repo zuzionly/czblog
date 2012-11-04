@@ -127,6 +127,9 @@ function bindTabs(){
     }else if('about'==path){
         $('#about').addClass('active');
         $("#nav_tab > li[id!=about]").removeClass('active');
+    }else{
+        $('#home').addClass('active');
+        $("#nav_tab > li[id!=home]").removeClass('active');
     }
     //end bind tab
     jQuery.ias({
@@ -134,7 +137,7 @@ function bindTabs(){
         	item: '.post',
         	pagination: '.pager',
         	next: '.next a',
-        	loader: '<img src='+"{{ url_for('static', filename='img/loader.gif') }}"+'/>',
+        	loader: '<img src="/static/img/loader.gif"/>',
             noneleft:true
     });
 }
