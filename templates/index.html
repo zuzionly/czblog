@@ -15,8 +15,12 @@
                                             <div class="post_header">
                                                 <h1><a href="{{ url_for('view_post_slug', slug=post.slug) }}" data-pjax="{{ url_for('view_post_slug', slug=post.slug) }}">{{ post.title }}</a></h1>
                                             </div>
+
                                             <p style="color: #999;">Posted: {{ post.created_at.strftime('%Y-%m-%d %H:%M:%S') }}
-                                                    {% if config.get('SHOW_VIEWS_ON_HOMEPAGE','Fasle') == 'True' %},  {{ post.views }} views{% endif %}
+                                                {% if config.get('SHOW_VIEWS_ON_HOMEPAGE','Fasle') == 'True' %},  {{ post.views }} views{% endif %}
+                                                {% if is_admin %}
+                                                <a href="{{ url_for('edit', post_id=post.id) }} " data-pjax="{{ url_for('edit', post_id=post.id) }}"><span class="label label-inverse">edit</span></span></a>
+                                                {% endif%}
                                             </p>
                                             {% if config.get('POST_CONTENT_ON_HOMEPAGE','Fasle') == 'True' %}
                                                 {{ post.render_content()|safe }}
