@@ -96,6 +96,17 @@ function save_settings(redirect){
 
 // run on load
 $(function(){
+    preRender();
+    render();
+    bindTabs();
+});
+
+function render(){
+    $('pre').addClass('prettyprint').addClass("linenums").addClass('pre-scrollable');
+    prettyPrint();
+}
+
+function preRender(){
     var $loading;
     var _loading = {};
 
@@ -134,16 +145,10 @@ $(function(){
         _loading.stop();
     }
 
-    $('pre').addClass('prettyprint').addClass("linenums").addClass('pre-scrollable');
-    prettyPrint();
-
-    bindTabs();
     $(document)
       .on('pjax:start', showLoading)
       .on('pjax:end',   function() {bindTabs();$("#lock").fadeOut();_loading.stop();})
-
-});
-
+}
 
 function bindTabs(){
 
