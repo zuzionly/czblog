@@ -99,11 +99,140 @@ $(function(){
     preRender();
     render();
     bindTabs();
+    fileUploader();
 });
+
+function fileUploader(){
+    // Function that will allow us to know if Ajax uploads are supported
+    function supportAjaxUploadWithProgress() {
+      return supportFileAPI() && supportAjaxUploadProgressEvents() && supportFormData();
+
+      // Is the File API supported?
+      function supportFileAPI() {
+        var fi = document.createElement('INPUT');
+        fi.type = 'file';
+        return 'files' in fi;
+      };
+
+      // Are progress events supported?
+      function supportAjaxUploadProgressEvents() {
+        var xhr = new XMLHttpRequest();
+        return !! (xhr && ('upload' in xhr) && ('onprogress' in xhr.upload));
+      };
+
+      // Is FormData supported?
+      function supportFormData() {
+        return !! window.FormData;
+      }
+    }
+
+    // Actually confirm support
+    if (supportAjaxUploadWithProgress()) {
+      // Ajax uploads are supported!
+      // Change the support message and enable the upload button
+      uploadBtn.removeAttribute('disabled');
+
+      // Init the single-field file upload
+      initFileOnlyAjaxUpload();
+    }
+
+
+    function initFileOnlyAjaxUpload() {
+      $('#uploadBtn').live('click',function (evt) {
+        var formData = new FormData();
+
+        // Since this is the file only, we send it to a specific location
+        var action = '/file/save';
+
+        // FormData only has the file
+        var fileInput = $("#fileName")[0];
+        var file = fileInput.files[0];
+        formData.append('file', file);
+
+        // Code common to both variants
+        sendXHRequest(formData, action);
+      });
+    }
+
+    // Once the FormData instance is ready and we know
+    // where to send the data, the code is the same
+    // for both variants of this technique
+    function sendXHRequest(formData, uri) {
+      // Get an XMLHttpRequest instance
+      var xhr = new XMLHttpRequest();
+
+      // Set up events
+      xhr.upload.addEventListener('loadstart', onloadstartHandler, false);
+      xhr.upload.addEventListener('progress', onprogressHandler, false);
+      xhr.upload.addEventListener('load', onloadHandler, false);
+      xhr.addEventListener('readystatechange', onreadystatechangeHandler, false);
+
+      // Set up request
+      xhr.open('POST', uri, true);
+
+      // Fire!
+      xhr.send(formData);
+    }
+
+    // Handle the start of the transmission
+    function onloadstartHandler(evt) {
+      $('#upload-status').html('Upload started!');
+    }
+
+    // Handle the end of the transmission
+    function onloadHandler(evt) {
+      $('#upload-status').html('Upload successful!');
+    }
+
+    // Handle the progress
+    function onprogressHandler(evt) {
+      var percent = evt.loaded/evt.total*100;
+      $('#progress').html('Progress: ' + percent + '%');
+    }
+
+    // Handle the response from the server
+    function onreadystatechangeHandler(evt) {
+      var status = null;
+
+      try {
+        status = evt.target.status;
+      }
+      catch(e) {
+        return;
+      }
+
+      if (status == '200' && evt.target.responseText) {
+        alert(evt.target.responseText);
+        $('#result').html( '<p>The server saw it as:</p><pre>' + evt.target.responseText + '</pre>');
+      } else{
+        alert(status)
+      }
+    }
+
+}
 
 function render(){
     $('pre').addClass('prettyprint').addClass("linenums").addClass('pre-scrollable');
     prettyPrint();
+
+
+    $('#modal-from-delete').live('show', function() {
+        var id = $(this).data('id'),
+            removeBtn = $(this).find('.danger'),
+            href = removeBtn.attr('href');
+
+        removeBtn.attr('href', 'delete/'+id);
+    });
+
+    $('.confirm-delete').live('click',function(e) {
+        e.preventDefault();
+        var id = $(this).data('id');
+        $('#modal-from-delete').data('id', id).modal('show');
+    });
+
+    $('#fileName').live('change',function() {
+       $('#attach').val($(this).val());
+    });
 }
 
 function preRender(){
@@ -147,7 +276,7 @@ function preRender(){
 
     $(document)
       .on('pjax:start', showLoading)
-      .on('pjax:end',   function() {bindTabs();$("#lock").fadeOut();_loading.stop();})
+      .on('pjax:end',   function() {bindTabs();render();$("#lock").fadeOut();_loading.stop();})
 }
 
 function bindTabs(){
@@ -186,33 +315,40 @@ function bindTabs(){
     });
 }
 
-$('#wrap').delegate('a', 'click', function(e) {
-        e.preventDefault();
-        var targetUrl = $(this).data('pjax');
-        //get current uri
-        var url = window.location.href
-        //get path
-        var path = url.split('/')[3];
-        if(targetUrl != ("/"+path)){
-            $(".slider").animate({"left":"-=1500px"}, "slow",function(){
-                $.pjax({
-                  url: targetUrl,
-                  container: '#main-content'
-                });
-             });
-         }
-    });
-
-$('div').delegate('#modal-from-delete', 'show', function() {
-    var id = $(this).data('id'),
-        removeBtn = $(this).find('.danger'),
-        href = removeBtn.attr('href');
-
-    removeBtn.attr('href', 'delete/'+id);
-});
-
-$('.confirm-delete').click(function(e) {
+$('#wrap').delegate('a[data-pjax]', 'click', function(e) {
     e.preventDefault();
-    var id = $(this).data('id');
-    $('#modal-from-delete').data('id', id).modal('show');
+    var targetUrl = $(this).data('pjax');
+    //get current uri
+    var url = window.location.href
+    //get path
+    var path = url.split('/')[3];
+    if(targetUrl != ("/"+path)){
+        $(".slider").animate({"left":"-=1500px"}, "slow",function(){
+            $.pjax({
+              url: targetUrl,
+              container: '#main-content'
+            });
+         });
+     }
 });
+
+function upload() {
+
+    var fileObj = $("#fileName")[0].files[0]; // 获取文件对象
+
+    // FormData 对象
+    var form = new FormData();
+    form.append("file", fileObj);          // 文件对象
+
+    // XMLHttpRequest 对象
+    var xhr = new XMLHttpRequest();
+    xhr.open("post", '/file/save', true);
+    xhr.onload = function () {
+        if (xhr.status === 200) {
+　　　　    alert('上传成功');
+　　　　} else {
+　　　　 　 alert('出错了');
+　　　　}
+    };
+    xhr.send(form);
+}

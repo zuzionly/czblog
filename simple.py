@@ -15,6 +15,8 @@ from werkzeug.security import check_password_hash
 from flask import render_template, request, Flask, flash, redirect, url_for, \
                   abort, jsonify, Response, make_response
 from werkzeug.contrib.cache import FileSystemCache, NullCache
+from werkzeug import secure_filename
+
 
 app = Flask(__name__)
 app.config.from_object('settings_core')
@@ -211,7 +213,7 @@ def edit(post_id):
         #TODO: better exception
         app.logger.error(datetime.datetime.now())
         app.logger.error('exception caught: ' + trace_back())
-        app.logger.error('Post id:'+str(posd_id))
+        app.logger.error('Post id:'+str(post_id))
         return abort(404)
 
     if request.method == "GET":
@@ -350,6 +352,22 @@ def feed():
     response = make_response(render_template('index.xml', posts=posts))
     response.mimetype = "application/xml"
     return response
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1] in app.config['ALLOWED_EXTENSIONS']
+
+@app.route("/file/save", methods=["POST"])
+@requires_authentication
+def save_files():
+    if request.method == 'POST':
+            file = request.files['file']
+            if file and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                filePath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                file.save(os.path.join(app.config['PATH'],app.config['UPLOAD_FOLDER'], filename))
+
+    return jsonify(success=True)
 
 def slugify(text, delim=u'-'):
     """Generates an slightly worse ASCII-only slug."""

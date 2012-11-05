@@ -1,5 +1,7 @@
 ﻿<!DOCTYPE html>
-{% extends "layout.html" %} {% block head %} {% if post.draft %}
+{% extends "layout.html" %}
+{% block head %}
+{% if post.draft %}
 <script type="text/javascript">
     function SaveTick() {
         issueSaveAjax({
@@ -14,54 +16,48 @@
         setTimeout("SaveTick();", 10000);
     })
 </script>
-{% endif %} {% endblock %} {% block content %}
+{% endif %}
+{% endblock %}
+{% block content %}
 <div class="slider">
     <div class="container-fluid">
         <div class="row-fluid">
-            <form accept-charset="UTF-8" action="" class="" id="edit_post" method="post">
-                <div class="span2 offset1">
-                    <ul class="nav nav-tabs nav-stacked">
-                        <li>
-                            <p>
-                                <a class="btn btn-inverse" href="{{ url_for('delete', post_id=post.id, next="admin") }}">
-                                    Delete
-                                </a>
-                            </p>
-                        </li>
-                        <li>
-                            <p>
-                                <span class="label label-inverse">
-                                    Draft
-                                </span>
-                                <input name="post_draft" type="hidden" value="0" />
-                                <input id="post_draft" name="post_draft" type="checkbox" value="1" {% if post.draft %}checked{% endif %} />
-                            </p>
-                        </li>
-                        <li>
-                            <p>
-                                {% if post.draft %}
-                                <a class="btn btn-inverse" href="#" onclick="issueSaveAjax({{ post.id }}, true); return false;"
-                                target="_blank">
-                                    Preview
-                                </a>
-                                {% else %}
-                                <a class="btn btn-inverse" href="{{  url_for('view_post_slug', slug=post.slug) }}" data-pjax="{{  url_for('view_post_slug', slug=post.slug) }}"
-                                target="_blank">
-                                    View live
-                                </a>
-                                {% endif %}
-                            </p>
-                        </li>
-                        <li>
-                            <p>
-                                <button class="btn btn-inverse" onclick="$('#edit_post').submit()">
-                                    Save
-                                </button>
-                            </p>
-                        </li>
-                    </ul>
+            <form accept-charset="UTF-8" action="" class="form-inline" id="edit_post" method="post">
+                <div class="span1 offset1">
+                    <div class="span1 offset5">
+                        <div class="row">
+                            <span class="label label-inverse">Titile:</span>
+                            <br/>
+                            <br/>
+                        </div>
+                        <div class="row">
+                            <span class="label label-inverse">Content:</span>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                        </div>
+                        <div class="row">
+                            <span class="label label-inverse">Options:</span>
+                        </div>
+                    </div>
                 </div>
-
                 <div class="span9">
                     <div class="row">
                         <div class="span10">
@@ -71,15 +67,56 @@
                                 </input>
                             </div>
                         </div>
-                    </div>
+                    </div><!-- end title row-->
                     <div class="row">
                         <div class="span10">
                             <div class="expandingArea text-content" id="edit_post_area">
-                                <textarea rows="40" class="input-block-level" id="post_content" name="post_content" placeholder="Write post here">{{ post.text }}</textarea>
+                                <textarea rows="20" class="input-block-level" id="post_content" name="post_content" placeholder="Write post here">{{ post.text }}</textarea>
                             </div>
                         </div>
+                    </div><!-- end content row-->
+                    <div class="row">
+                        <div class="nav-pills">
+                            <div class="input-append">
+                                <span class="add-on">
+                                    Draft
+                                </span>
+                                <input id="post_draft" name="post_draft" type="checkbox" value="1" {% if post.draft %}checked{% endif %} />
+                            </div>
+                            <div class="input-append">
+                                <input style="display:none" id="fileName" name="files[]" type="file" multiple="multiple"></input>
+                                <a class="btn btn-inverse add-on" onclick="$('input#fileName').click();"><i class="icon-file icon-white"></i>
+                                </a>
+                               <input id="attach" class="input-large" type="text">
+                                <button id="uploadBtn" class="btn btn-inverse" disabled>upload
+                                </button>
+                            </div>
+
+                            {% if post.draft %}
+                            <a class="btn btn-inverse" href="#" onclick="issueSaveAjax({{ post.id }}, true); return false;"
+                            target="_blank">
+                                Preview
+                            </a>
+                            {% else %}
+                            <a class="btn btn-inverse" href="{{  url_for('view_post_slug', slug=post.slug) }}" data-pjax="{{  url_for('view_post_slug', slug=post.slug) }}"
+                            target="_blank">
+                                View live
+                            </a>
+                            {% endif %}
+
+                            <a class="btn btn-inverse" href="{{ url_for('delete', post_id=post.id, next="admin") }}" data-pjax="{{ url_for('delete', post_id=post.id, next="admin") }}">
+                                Delete
+                            </a>
+
+                            <button class="btn btn-inverse" onclick="$('#edit_post').submit()">
+                                Save
+                            </button>
+                            <p id="upload-status"></p>
+                            <p id="progress"></p>
+                            <pre id="result"></pre>
+                        </div>
                     </div>
-                </div>
+                </div><!-- end span9-->
             </form>
         </div>
     </div>
