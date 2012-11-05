@@ -26,6 +26,25 @@
             .slider {
                 position: relative;
         }
+        #lock {
+          background: #333;
+          height: 100%;
+          width: 100%;
+          top: 0px;
+          left: 0px;
+          position: fixed;
+          z-index: 1000;
+          opacity: 0.8;
+          -moz-opacity: 0.8;
+          filter:alpha(opacity=8);
+        }
+
+        #loading {
+          background: url("//www.doneta.org/static/images/loading01.png") no-repeat top left;
+          width: 150px;
+          height: 50px;
+          margin: 0 auto;
+        }
         </style>
         {% endblock%}
         {% block js %}
@@ -134,6 +153,9 @@
             </div>
         </footer>
         <!-- end footer content -->
+         <div id="lock" class="hide">
+            <div id="loading"></div>
+         </div>
     </body>
     <script src="{{ url_for('static', filename='js/jquery-1.7.2.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>

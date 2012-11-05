@@ -96,15 +96,54 @@ function save_settings(redirect){
 
 // run on load
 $(function(){
+    var $loading;
+    var _loading = {};
+
+    $loading = $('#loading');
+    _loading.points = new Array();
+    _loading.point = 0;
+    for (var i = 0, j = 0; j >= -4495; j-=155) {
+      _loading.points[i++] = j;
+    };
+
+    _loading.next = function() {
+        if(this.point == this.points.length) this.point = 0;
+        return this.points[this.point++];
+    }
+
+    _loading.animate = function() {
+        $loading.css("background-position", this.next() + "px 0");
+        if(!this.terminated) setTimeout(function() {_loading.animate()}, 30);
+    }
+
+    _loading.stop = function() {
+        this.terminated = true;
+        this.point = 0;
+    }
+
+    var showLoading = function() {
+        var margin_top = ($(window).height() - $loading.outerHeight()) / 2;
+        $loading.css("margin-top", margin_top + "px");
+        $("#lock").fadeIn();
+        _loading.terminated = false;
+        _loading.animate();
+      }
+
+    var hideLoading = function() {
+        $("#lock").fadeOut();
+        _loading.stop();
+    }
+
     $('pre').addClass('prettyprint').addClass("linenums").addClass('pre-scrollable');
     prettyPrint();
 
     bindTabs();
     $(document)
-      //.on('pjax:start', function() { $('#loading').show() })
-      .on('pjax:end',   function() { bindTabs(); })
+      .on('pjax:start', showLoading)
+      .on('pjax:end',   function() {bindTabs();$("#lock").fadeOut();_loading.stop();})
 
 });
+
 
 function bindTabs(){
 
