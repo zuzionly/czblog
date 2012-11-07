@@ -55,6 +55,26 @@ function issueSaveAjax(id, redirect){
     })
 };
 
+function uploadFile(){
+
+    var data = new FormData();
+    data.append('file', $('#fileName')[0].files[0]);
+
+    $.ajax({
+        url: '/file/save',
+        data: data,
+        processData: false,
+        type: 'POST',
+        contentType: false,
+        // Now you should be able to do this:
+        mimeType: 'multipart/form-data',    //Property added in 1.5.1
+
+        success: function (data) {
+            alert(data);
+        }
+    });
+}
+
 function save_settings(redirect){
     var sPOSTS_PER_PAGE = $("#POSTS_PER_PAGE").val();
     var sPOST_CONTENT_ON_HOMEPAGE = $("input[name='POST_CONTENT_ON_HOMEPAGE']:checked").val();
@@ -99,117 +119,9 @@ $(function(){
     preRender();
     render();
     bindTabs();
-    fileUploader();
 });
 
-function fileUploader(){
-    // Function that will allow us to know if Ajax uploads are supported
-    function supportAjaxUploadWithProgress() {
-      return supportFileAPI() && supportAjaxUploadProgressEvents() && supportFormData();
 
-      // Is the File API supported?
-      function supportFileAPI() {
-        var fi = document.createElement('INPUT');
-        fi.type = 'file';
-        return 'files' in fi;
-      };
-
-      // Are progress events supported?
-      function supportAjaxUploadProgressEvents() {
-        var xhr = new XMLHttpRequest();
-        return !! (xhr && ('upload' in xhr) && ('onprogress' in xhr.upload));
-      };
-
-      // Is FormData supported?
-      function supportFormData() {
-        return !! window.FormData;
-      }
-    }
-
-    // Actually confirm support
-    if (supportAjaxUploadWithProgress()) {
-      // Ajax uploads are supported!
-      // Change the support message and enable the upload button
-      uploadBtn.removeAttribute('disabled');
-
-      // Init the single-field file upload
-      initFileOnlyAjaxUpload();
-    }
-
-
-    function initFileOnlyAjaxUpload() {
-      $('#uploadBtn').live('click',function (evt) {
-        var formData = new FormData();
-
-        // Since this is the file only, we send it to a specific location
-        var action = '/file/save';
-
-        // FormData only has the file
-        var fileInput = $("#fileName")[0];
-        var file = fileInput.files[0];
-        formData.append('file', file);
-
-        // Code common to both variants
-        sendXHRequest(formData, action);
-      });
-    }
-
-    // Once the FormData instance is ready and we know
-    // where to send the data, the code is the same
-    // for both variants of this technique
-    function sendXHRequest(formData, uri) {
-      // Get an XMLHttpRequest instance
-      var xhr = new XMLHttpRequest();
-
-      // Set up events
-      xhr.upload.addEventListener('loadstart', onloadstartHandler, false);
-      xhr.upload.addEventListener('progress', onprogressHandler, false);
-      xhr.upload.addEventListener('load', onloadHandler, false);
-      xhr.addEventListener('readystatechange', onreadystatechangeHandler, false);
-
-      // Set up request
-      xhr.open('POST', uri, true);
-
-      // Fire!
-      xhr.send(formData);
-    }
-
-    // Handle the start of the transmission
-    function onloadstartHandler(evt) {
-      $('#upload-status').html('Upload started!');
-    }
-
-    // Handle the end of the transmission
-    function onloadHandler(evt) {
-      $('#upload-status').html('Upload successful!');
-    }
-
-    // Handle the progress
-    function onprogressHandler(evt) {
-      var percent = evt.loaded/evt.total*100;
-      $('#progress').html('Progress: ' + percent + '%');
-    }
-
-    // Handle the response from the server
-    function onreadystatechangeHandler(evt) {
-      var status = null;
-
-      try {
-        status = evt.target.status;
-      }
-      catch(e) {
-        return;
-      }
-
-      if (status == '200' && evt.target.responseText) {
-        alert(evt.target.responseText);
-        $('#result').html( '<p>The server saw it as:</p><pre>' + evt.target.responseText + '</pre>');
-      } else{
-        alert(status)
-      }
-    }
-
-}
 
 function render(){
     $('pre').addClass('prettyprint').addClass("linenums").addClass('pre-scrollable');
@@ -331,24 +243,3 @@ $('#wrap').delegate('a[data-pjax]', 'click', function(e) {
          });
      }
 });
-
-function upload() {
-
-    var fileObj = $("#fileName")[0].files[0]; // 获取文件对象
-
-    // FormData 对象
-    var form = new FormData();
-    form.append("file", fileObj);          // 文件对象
-
-    // XMLHttpRequest 对象
-    var xhr = new XMLHttpRequest();
-    xhr.open("post", '/file/save', true);
-    xhr.onload = function () {
-        if (xhr.status === 200) {
-　　　　    alert('上传成功');
-　　　　} else {
-　　　　 　 alert('出错了');
-　　　　}
-    };
-    xhr.send(form);
-}

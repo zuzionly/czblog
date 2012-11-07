@@ -8,6 +8,6 @@ BLOG_URL = "/"
 PATH = os.path.abspath(os.path.dirname(__file__))
 #MAX_CONTENT_LENGTH = 4 * 1024 * 1024
 # file upload
-UPLOAD_FOLDER = 'file/save'
+UPLOAD_FOLDER = 'static/file'
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 
