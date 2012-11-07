@@ -196,14 +196,7 @@ function preRender(){
 
     $(document)
       .on('pjax:start', showLoading)
-      .on('pjax:end',   function() {$("#lock").fadeOut();_loading.stop();bindTabs();if(window.location.href==''){jQuery.ias({
-    	container : '.listing',
-    	item: '.post',
-    	pagination: '.pager',
-    	next: '.next a',
-    	loader: '<img src="/static/img/loader.gif"/>',
-        noneleft:true
-    });}})
+      .on('pjax:end',   function() {$("#lock").fadeOut();_loading.stop();bindTabs();})
 }
 
 function bindTabs(){
