@@ -119,6 +119,14 @@ $(function(){
     preRender();
     render();
     bindTabs();
+    jQuery.ias({
+    	container : '.listing',
+    	item: '.post',
+    	pagination: '.pager',
+    	next: '.next a',
+    	loader: '<img src="/static/img/loader.gif"/>',
+        noneleft:true
+    });
 });
 
 
@@ -188,7 +196,14 @@ function preRender(){
 
     $(document)
       .on('pjax:start', showLoading)
-      .on('pjax:end',   function() {bindTabs();render();$("#lock").fadeOut();_loading.stop();})
+      .on('pjax:end',   function() {$("#lock").fadeOut();_loading.stop();bindTabs();if(window.location.href==''){jQuery.ias({
+    	container : '.listing',
+    	item: '.post',
+    	pagination: '.pager',
+    	next: '.next a',
+    	loader: '<img src="/static/img/loader.gif"/>',
+        noneleft:true
+    });}})
 }
 
 function bindTabs(){
@@ -217,14 +232,7 @@ function bindTabs(){
         $("#nav_tab > li[id!=home]").removeClass('active');
     }
     //end bind tab
-    jQuery.ias({
-        	container : '.listing',
-        	item: '.post',
-        	pagination: '.pager',
-        	next: '.next a',
-        	loader: '<img src="/static/img/loader.gif"/>',
-            noneleft:true
-    });
+
 }
 
 $('#wrap').delegate('a[data-pjax]', 'click', function(e) {

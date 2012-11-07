@@ -209,6 +209,7 @@
                 // walk through the items on the next page
                 // and add them to the items array
                 container = $(opts.container, data).eq(0);
+                //alert($(".listing",data));
                 if (0 == container.length) {
                     // incase the element is a root element (body > element),
                     // try to filter it
