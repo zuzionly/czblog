@@ -1,4 +1,4 @@
-﻿""" simple """
+﻿""" czblog """
 
 # python imports
 import re
