@@ -364,7 +364,7 @@ def save_files():
     filePath = None
     if request.method == 'POST':
             file = request.files['file']
-            if file and allowed_file(file.filename):
+            if file and allowed_file(file.filename.lower()):
                 filename = secure_filename(file.filename)
                 if '.' not in filename:
                     filename = secure_filename("%s.%s" % (datetime.datetime.now(), filename))
