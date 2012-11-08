@@ -361,14 +361,17 @@ def allowed_file(filename):
 @app.route("/file/save", methods=["POST"])
 @requires_authentication
 def save_files():
+    filePath = None
     if request.method == 'POST':
             file = request.files['file']
             if file and allowed_file(file.filename):
                 filename = secure_filename(file.filename)
-                filePath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                if '.' not in filename:
+                    filename = secure_filename("%s.%s" % (datetime.datetime.now(), filename))
+                filePath = "http://%s/%s/%s" % (app.config['DOMAIN'],app.config['UPLOAD_FOLDER'], filename)
                 file.save(os.path.join(app.config['PATH'],app.config['UPLOAD_FOLDER'], filename))
-
-    return jsonify(success=True)
+    if filePath:
+        return jsonify(filePath=filePath)
 
 def slugify(text, delim=u'-'):
     """Generates an slightly worse ASCII-only slug."""

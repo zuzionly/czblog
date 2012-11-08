@@ -62,6 +62,21 @@ function uploadFile(){
 
     $.ajax({
         url: '/file/save',
+        xhr: function() {
+            myXhr = $.ajaxSettings.xhr();
+            if(myXhr.upload){
+                myXhr.upload.addEventListener('progress',function (event) {
+                                                    　　　　if (event.lengthComputable) {
+                                                    　　　　　　var complete = (event.loaded / event.total * 100 | 0);
+                                                    　　　　　　$('#uploadprogress').val(complete);
+                                                    　　　　　　if (complete == 100) {
+                                                                    $('#progUpdate').empty().append("Upload Complete");
+                                                                }
+                                                    　　　　}
+                                                         }, false);
+            }
+            return myXhr;
+        },
         data: data,
         processData: false,
         type: 'POST',
@@ -69,8 +84,26 @@ function uploadFile(){
         // Now you should be able to do this:
         mimeType: 'multipart/form-data',    //Property added in 1.5.1
 
+        beforeSend: function(){
+         $("#uploadprogress").show();
+        },
+        error: function(data,textStatus,errorThrown){
+            $("#uploadprogress").hide();
+            var err;
+            if (textStatus !== "abort" && errorThrown !== "abort") {
+                try {
+                    err = $.parseJSON(data.responseText);
+                    alert(err.Message);
+                } catch(e) {
+                    alert("ERROR:\n" + data.responseText);
+                }
+            }
+        },
         success: function (data) {
-            alert(data);
+            var resp = $.parseJSON(data)
+            $("#uploadprogress").animate({"left":"-=80px"}).hide(1000,function(){
+                    $("#progUpdate").empty().html("uploaded! url:<a href='"+resp.filePath+"'>"+resp.filePath+"</a>")
+                    });
         }
     });
 }
