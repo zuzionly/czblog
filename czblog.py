@@ -318,6 +318,7 @@ def save_settings():
                      'BLOG_TITLE':None,\
                      'BLOG_TAGLINE':None,\
                      'BLOG_URL':None,\
+                     'DISQUS_NAME':None,\
                      'FONT_NAME':None}
     # only save changed value
 

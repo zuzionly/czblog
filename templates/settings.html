@@ -58,7 +58,7 @@
                 <div class="controls">
                     <div class="input-prepend">
                         <span class="add-on"><i class="icon-user"></i></span>
-                        <input class="span3" name="ANALYTICS_ID" id="ANALYTICS_ID" type="email" value="{{ config.get("ANALYTICS_ID","0") }}">
+                        <input class="span3" name="ANALYTICS_ID" id="ANALYTICS_ID" type="text" value="{{ config.get("ANALYTICS_ID","0") }}">
                     </div>
                 </div>
             </div>
@@ -67,7 +67,7 @@
                 <div class="controls">
                     <div class="input-prepend">
                         <span class="add-on"><i class="icon-user"></i></span>
-                        <input class="span3" name="GITHUB_USERNAME" id="GITHUB_USERNAME" type="email" value="{{ config.get("GITHUB_USERNAME","0") }}">
+                        <input class="span3" name="GITHUB_USERNAME" id="GITHUB_USERNAME" type="text" value="{{ config.get("GITHUB_USERNAME","0") }}">
                     </div>
                 </div>
             </div>
@@ -76,7 +76,7 @@
                 <div class="controls">
                     <div class="input-prepend">
                         <span class="add-on"><i class="icon-user"></i></span>
-                        <input class="span3" name="GOOGLE_PLUS_PROFILE" id="GOOGLE_PLUS_PROFILE" type="email" value="{{ config.get("GOOGLE_PLUS_PROFILE","0") }}">
+                        <input class="span3" name="GOOGLE_PLUS_PROFILE" id="GOOGLE_PLUS_PROFILE" type="text" value="{{ config.get("GOOGLE_PLUS_PROFILE","0") }}">
                     </div>
                 </div>
             </div>
@@ -85,7 +85,7 @@
                 <div class="controls">
                     <div class="input-prepend">
                         <span class="add-on"><i class="icon-user"></i></span>
-                        <input class="span3" name="TWITTER_HANDLE" id="TWITTER_HANDLE" type="email" value="{{ config.get("TWITTER_HANDLE","0") }}">
+                        <input class="span3" name="TWITTER_HANDLE" id="TWITTER_HANDLE" type="text" value="{{ config.get("TWITTER_HANDLE","0") }}">
                     </div>
                 </div>
             </div>
@@ -103,7 +103,7 @@
                 <div class="controls">
                     <div class="input-prepend">
                         <span class="add-on"><i class="icon-pencil"></i></span>
-                        <input class="span3" name="BLOG_TITLE" id="BLOG_TITLE" type="email" value="{{ config.get("BLOG_TITLE","0") }}">
+                        <input class="span3" name="BLOG_TITLE" id="BLOG_TITLE" type="text" value="{{ config.get("BLOG_TITLE","0") }}">
                     </div>
                 </div>
             </div>
@@ -112,7 +112,16 @@
                 <div class="controls">
                     <div class="input-prepend">
                         <span class="add-on"><i class="icon-tag"></i></span>
-                        <input class="span3" name="BLOG_TAGLINE" id="BLOG_TAGLINE" type="email" value="{{ config.get("BLOG_TAGLINE","0") }}">
+                        <input class="span3" name="BLOG_TAGLINE" id="BLOG_TAGLINE" type="text" value="{{ config.get("BLOG_TAGLINE","0") }}">
+                    </div>
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="DISQUS_NAME">Disqus Account Name</label>
+                <div class="controls">
+                    <div class="input-prepend">
+                        <span class="add-on"><i class="icon-user"></i></span>
+                        <input class="span3" name="DISQUS_NAME" id="DISQUS_NAME" type="text" value="{{ config.get("DISQUS_NAME","0") }}">
                     </div>
                 </div>
             </div>
