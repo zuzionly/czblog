@@ -1,7 +1,9 @@
 About
 ================
-A copy of [Simple](http://github.com/orf/simple).
-plan to add some features based on it...
+A simple blog based on [Simple](http://github.com/orf/simple).
+rebuilt the UI with Bootstrap and PJAX.
+using disqus as the comment plugin.
+
 
 Installation
 ============
@@ -13,7 +15,7 @@ Installation
     python create_config.py
 
 ###Run
-    python simple.py
+    python czblog.py
 
 Deployment
 ============
@@ -40,7 +42,4 @@ You can see my blog running this software [here](http://chuan7i.com).
 
 TODO
 ============
->1. upload file
->2. online configuration
->3. comments
 
