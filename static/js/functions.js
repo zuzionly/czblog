@@ -101,8 +101,31 @@ function uploadFile(){
         error:errorCall,
         success:successCall
     });
-}
+};
 
+function sendMail(id,title){
+    var title = title,
+        body = $("#content-"+id).html();
+
+    var req = $.ajax({
+        type: "POST",
+        url:"/mail/"+id,
+        data: {title: title,
+               body: body}
+    }).done(function(data)
+    {
+        if(data.success==true){
+            $("#result-"+id).html("<div class='alert alert-success'>send success!</div>")
+        }else if (data.success==false){
+            $("#result-"+id).html("<div class='alert alert-error'>send failed!</div>")
+        }
+        if (redirect)
+        {
+            var win = window.open("/preview/"+id, '_blank');
+        }
+    });
+
+}
 function issueSaveAjax(id, redirect){
     var ptitle   = $("#post_title").val();
     var pcontent = $("#post_content").val();

@@ -18,6 +18,9 @@ from werkzeug.contrib.cache import FileSystemCache, NullCache
 from werkzeug import secure_filename
 import logging
 
+# SMTP mail
+from flask.ext.mail import Mail,Message
+
 
 app = Flask(__name__)
 app.config.from_object('settings_core')
@@ -27,7 +30,10 @@ file_handler = logging.FileHandler("czblog.log", mode='a', encoding="utf8", dela
 file_handler.setLevel(logging.ERROR)
 app.logger.addHandler(file_handler)
 
+# db
 db = SQLAlchemy(app)
+
+# cache
 cache_directory = os.path.dirname(__file__)
 try:
     cache = FileSystemCache(os.path.join(cache_directory, "cache"))
@@ -36,19 +42,26 @@ except Exception,e:
     print "Error: %s"%e
     cache = NullCache()
 
+# for slugify
 _punct_re = re.compile(r'[\t !"#$%&\'()*\-/<=>?@\[\\\]^_`{|},.]+')
 
+# mark down
 MARKDOWN_PARSER = markdown.Markdown(extensions=['fenced_code'],
                                     output_format="html5",
                                     safe_mode=True)
 
+# for session
 app.secret_key = "$\xb8\xf1\xdf\xd4\x9c\xcf5\xcb\x9f\xb2On\x12\xde\xcb\x8f\xa5\xd6\t\x85\xdf\xe2Y\xc8\xfb\xcd\x05-u"
 
+# for logger
 def trace_back():
     try:
         return traceback.format_exc()
     except:
         return ''
+# mail
+myMail = Mail(app)
+
 
 class Post(db.Model):
     def __init__(self, title=None, created_at=None):
@@ -108,6 +121,24 @@ def requires_authentication(func):
         return func(*args, **kwargs)
 
     return _auth_decorator
+
+@app.route("/mail/<int:post_id>",methods=["POST", "GET"])
+def mail(post_id):
+    try:
+        title = request.form.get("title")
+        body = request.form.get("body")
+        if title:
+            msg = Message("%s @blog" % (title),
+                              sender="admin@chuan7i.com",
+                              recipients=["zuzionly.4e540@m.evernote.com"])
+            msg.html = body
+            myMail.send(msg)
+            return jsonify(success=True)
+        else:
+            return jsonify(success=False)
+    except:
+        return jsonify(success=False)
+
 
 @app.route("/")
 def index():

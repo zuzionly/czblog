@@ -10,3 +10,9 @@ MAX_CONTENT_LENGTH = 3 * 1024 * 1024
 # file upload
 UPLOAD_FOLDER = 'static/file'
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
+#EMAIL SETTINGS
+MAIL_SERVER='smtp.gmail.com'
+MAIL_PORT= 465
+MAIL_USE_SSL=True
+MAIL_USERNAME = ''
+MAIL_PASSWORD = ''

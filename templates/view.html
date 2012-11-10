@@ -8,6 +8,8 @@
 <div class="slider">
     <div class="container">
         <section id="post-{{ post.id }}">
+                <div id="result-{{ post.id}}">
+                </div>
                 <div class="row-fluid">
                     <div class="span6">
                         <h1>{{ post.title }}</h1>
@@ -20,15 +22,15 @@
                     <div class="span1">
                         {% if is_admin %}
                         <a href="{{ url_for('edit', post_id=post.id) }} " data-pjax="{{ url_for('edit', post_id=post.id) }}"><span class="label label-inverse">edit</span></span></a>
+                        <a href="#" onClick="sendMail('{{ post.id }}','{{ post.title }}');return false"><span class="label label-inverse">send to evernote</span></a>
                         {% endif%}
                     </div>
                 </div>
                 <br/>
                 <div class="row-fluid">
+                    <div id="content-{{ post.id }}">
                     {{ post.render_content()|safe }}
-                    {% if is_admin %}
-
-                    {% endif %}
+                    </div>
                 </div>
 
 
