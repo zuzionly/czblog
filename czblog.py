@@ -1,9 +1,10 @@
-""" simple """
+﻿""" czblog """
 
 # python imports
 import re
 import datetime
 import os
+import traceback
 from functools import wraps
 from unicodedata import normalize
 
@@ -12,11 +13,20 @@ import markdown
 from flask.ext.sqlalchemy import SQLAlchemy
 from werkzeug.security import check_password_hash
 from flask import render_template, request, Flask, flash, redirect, url_for, \
-                  abort, jsonify, Response, make_response
+                  abort, jsonify, Response, make_response,send_from_directory
 from werkzeug.contrib.cache import FileSystemCache, NullCache
+from werkzeug import secure_filename
+import logging
+
 
 app = Flask(__name__)
-app.config.from_object('settings')
+app.config.from_object('settings_core')
+app.config.from_object('settings_custom')
+# set file logger handler
+file_handler = logging.FileHandler("czblog.log", mode='a', encoding="utf8", delay=False)
+file_handler.setLevel(logging.ERROR)
+app.logger.addHandler(file_handler)
+
 db = SQLAlchemy(app)
 cache_directory = os.path.dirname(__file__)
 try:
@@ -26,13 +36,19 @@ except Exception,e:
     print "Error: %s"%e
     cache = NullCache()
 
-
-
 _punct_re = re.compile(r'[\t !"#$%&\'()*\-/<=>?@\[\\\]^_`{|},.]+')
 
 MARKDOWN_PARSER = markdown.Markdown(extensions=['fenced_code'],
                                     output_format="html5",
                                     safe_mode=True)
+
+app.secret_key = "$\xb8\xf1\xdf\xd4\x9c\xcf5\xcb\x9f\xb2On\x12\xde\xcb\x8f\xa5\xd6\t\x85\xdf\xe2Y\xc8\xfb\xcd\x05-u"
+
+def trace_back():
+    try:
+        return traceback.format_exc()
+    except:
+        return ''
 
 class Post(db.Model):
     def __init__(self, title=None, created_at=None):
@@ -69,12 +85,13 @@ class Post(db.Model):
 try:
     db.create_all()
 except Exception:
+    app.logger.error('exception caught: ' + trace_back())
     pass
 
 def is_admin():
     auth = request.authorization
-    if not auth or not (auth.username == app.config["ADMIN_USERNAME"]
-                        and check_password_hash(app.config["ADMIN_PASSWORD"],
+    if not auth or not (auth.username == app.config['ADMIN_USERNAME']
+                        and check_password_hash(app.config['ADMIN_PASSWORD'],
                                                 auth.password)):
         return False
     return True
@@ -103,14 +120,14 @@ def index():
     posts_count = posts_master.count()
 
     posts = posts_master\
-                .limit(app.config["POSTS_PER_PAGE"])\
-                .offset(page * app.config["POSTS_PER_PAGE"])\
+                .limit(int(app.config["POSTS_PER_PAGE"]))\
+                .offset(page * int(app.config["POSTS_PER_PAGE"]))\
                 .all()
 
     # Sorry for the verbose names, but this seemed like a sensible
     # thing to do.
-    last_possible_post_on_page = page * app.config["POSTS_PER_PAGE"]\
-                               + app.config["POSTS_PER_PAGE"]
+    last_possible_post_on_page = page * int(app.config["POSTS_PER_PAGE"])\
+                               + int(app.config["POSTS_PER_PAGE"])
     there_is_more = posts_count > last_possible_post_on_page
 
     return render_template("index.html",
@@ -118,6 +135,20 @@ def index():
                            now=datetime.datetime.now(),
                            is_more=there_is_more,
                            current_page=page,
+                           is_admin=is_admin())
+
+@app.route("/guestbook")
+def guestbook():
+
+    return render_template("guestbook.html",
+                           now=datetime.datetime.now(),
+                           is_admin=is_admin())
+
+@app.route("/about")
+def about():
+
+    return render_template("about.html",
+                           now=datetime.datetime.now(),
                            is_admin=is_admin())
 
 @app.route("/style.css")
@@ -132,6 +163,11 @@ def view_post(post_id):
     try:
         post = db.session.query(Post).filter_by(id=post_id, draft=False).one()
     except Exception:
+        app.logger.error("---------------------")
+        app.logger.error(datetime.datetime.now())
+        app.logger.error('exception caught: ' + trace_back())
+        app.logger.error('Post id:'+str(post_id))
+        app.logger.error("---------------------")
         return abort(404)
 
     db.session.query(Post)\
@@ -141,12 +177,17 @@ def view_post(post_id):
 
     return render_template("view.html", post=post, is_admin=is_admin())
 
-@app.route("/<slug>")
+@app.route("/post/<slug>")
 def view_post_slug(slug):
     try:
-        post = db.session.query(Post).filter_by(slug=slug, draft=False).one()
+        post = db.session.query(Post).filter_by(slug=slug,draft=False).one()
     except Exception:
         #TODO: Better exception
+        app.logger.error("---------------------")
+        app.logger.error(datetime.datetime.now())
+        app.logger.error('exception caught: ' + trace_back())
+        app.logger.error('slug:'+slug)
+        app.logger.error("---------------------")
         return abort(404)
 
     if not any(botname in request.user_agent.string for botname in
@@ -158,8 +199,9 @@ def view_post_slug(slug):
             .update({Post.views:Post.views+1})
         db.session.commit()
 
-    pid = request.args.get("pid", "0")
-    return render_template("view.html", post=post, pid=pid, is_admin=is_admin())
+##    pid = request.args.get("pid", "0")
+##    return render_template("view.html", post=post, pid=pid, is_admin=is_admin())
+    return render_template("view.html", post=post, is_admin=is_admin())
 
 @app.route("/new", methods=["POST", "GET"])
 @requires_authentication
@@ -179,10 +221,15 @@ def edit(post_id):
         post = db.session.query(Post).filter_by(id=post_id).one()
     except Exception:
         #TODO: better exception
+        app.logger.error("---------------------")
+        app.logger.error(datetime.datetime.now())
+        app.logger.error('exception caught: ' + trace_back())
+        app.logger.error('Post id:'+str(post_id))
+        app.logger.error("---------------------")
         return abort(404)
 
     if request.method == "GET":
-        return render_template("edit.html", post=post)
+        return render_template("edit.html", post=post,is_admin=is_admin())
     else:
         if post.title != request.form.get("post_title", ""):
             post.title = request.form.get("post_title","")
@@ -206,7 +253,13 @@ def delete(post_id):
         post = db.session.query(Post).filter_by(id=post_id).one()
     except Exception:
         # TODO: define better exceptions for db failure.
+        app.logger.error("---------------------")
+        app.logger.error(datetime.datetime.now())
+        app.logger.error('exception caught: ' + trace_back())
+        app.logger.error('Post id:'+str(post_id))
+        app.logger.error("---------------------")
         flash("Error deleting post ID %s"%post_id, category="error")
+        return abort(500)
     else:
         db.session.delete(post)
         db.session.commit()
@@ -224,7 +277,7 @@ def admin():
     posts  = db.session.query(Post)\
                  .filter_by(draft=False)\
                  .order_by(Post.created_at.desc()).all()
-    return render_template("admin.html", drafts=drafts, posts=posts)
+    return render_template("admin.html", drafts=drafts, posts=posts, now=datetime.datetime.now(), is_admin=is_admin())
 
 @app.route("/admin/save/<int:post_id>", methods=["POST"])
 @requires_authentication
@@ -233,6 +286,11 @@ def save_post(post_id):
         post = db.session.query(Post).filter_by(id=post_id).one()
     except Exception:
         # TODO Better exception
+        app.logger.error("---------------------")
+        app.logger.error(datetime.datetime.now())
+        app.logger.error('exception caught: ' + trace_back())
+        app.logger.error('Post id:'+post_id)
+        app.logger.error("---------------------")
         return abort(404)
     if post.title != request.form.get("title", ""):
         post.title = request.form.get("title","")
@@ -250,9 +308,57 @@ def preview(post_id):
         post = db.session.query(Post).filter_by(id=post_id).one()
     except Exception:
         # TODO: Better exception
+        app.logger.error("---------------------")
+        app.logger.error(datetime.datetime.now())
+        app.logger.error('exception caught: ' + trace_back())
+        app.logger.error('Post id:'+post_id)
+        app.logger.error("---------------------")
         return abort(404)
 
     return render_template("post_preview.html", post=post)
+
+@app.route("/settings")
+@requires_authentication
+def settings():
+
+    return render_template("settings.html",now=datetime.datetime.now(),is_admin=is_admin())
+
+@app.route("/settings/save", methods=["POST"])
+@requires_authentication
+def save_settings():
+    custom_config = {'POSTS_PER_PAGE':None,\
+                     'POST_CONTENT_ON_HOMEPAGE':None,\
+                     'SHOW_VIEWS_ON_HOMEPAGE':None,\
+                     'ANALYTICS_ID':None,\
+                     'GITHUB_USERNAME':None,\
+                     'GOOGLE_PLUS_PROFILE':None,\
+                     'TWITTER_HANDLE':None,\
+                     'CONTACT_EMAIL':None,\
+                     'BLOG_TITLE':None,\
+                     'BLOG_TAGLINE':None,\
+                     'BLOG_URL':None,\
+                     'DISQUS_NAME':None,\
+                     'FONT_NAME':None}
+    # only save changed value
+    try:
+        for i in custom_config:
+            if(app.config[i]!= request.form.get(i)):
+                custom_config[i] = request.form.get(i)
+                updateSettingFile(i,str(custom_config[i]))
+
+        return jsonify(success=True)
+    except:
+        return jsonify(success=False)
+
+
+def updateSettingFile(paraName,paraValue):
+    oldFile = open('settings_custom.py')
+    oldFileContent = oldFile.read()
+    oldFile.close()
+    # replace the new field
+    newFileContent = re.sub(paraName+''' = "'''+str(app.config[paraName])+'''"''', paraName+''' = "'''+ paraValue+'''"''', oldFileContent)
+    if newFileContent != oldFileContent and newFileContent != None:
+        open('settings_custom.py', 'wb').write(newFileContent)
 
 @app.route("/posts.rss")
 def feed():
@@ -262,9 +368,43 @@ def feed():
                 .limit(10)\
                 .all()
 
-    response = make_response(render_template('index.xml', posts=posts))
+    response = make_response(render_template('index.xml'))
     response.mimetype = "application/xml"
     return response
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1] in app.config['ALLOWED_EXTENSIONS']
+
+@app.route("/file/save", methods=["POST"])
+@requires_authentication
+def save_files():
+    if request.method == 'POST':
+            file = request.files['file']
+            if file and allowed_file(file.filename.lower()):
+                filename = secure_filename(file.filename)
+                if '.' not in filename:
+                    filename = secure_filename("%s.%s" % (datetime.datetime.now(), filename))
+                try:
+                    file.save(os.path.join(app.config['PATH'],app.config['UPLOAD_FOLDER'], filename))
+                    return jsonify(filename=filename)
+                except:
+                    return jsonify(errorcode="save file failed!")
+            else:
+                return jsonify(errorcode="file type is not allowed!")
+
+@app.route('/file/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'],
+                               filename)
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html',now=datetime.datetime.now(),is_admin=is_admin()), 404
+
+@app.errorhandler(500)
+def internal_error(e):
+    return render_template('500.html',now=datetime.datetime.now(),is_admin=is_admin()), 500
 
 def slugify(text, delim=u'-'):
     """Generates an slightly worse ASCII-only slug."""
