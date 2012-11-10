@@ -55,56 +55,70 @@ function issueSaveAjax(id, redirect){
     })
 };
 
+
+function resetProgress(){
+    $(".progress").hide();
+    $(".alert").remove();
+}
+
 function uploadFile(){
-
     var data = new FormData();
-    data.append('file', $('#fileName')[0].files[0]);
-
-    $.ajax({
-        url: '/file/save',
-        xhr: function() {
+    file = $('#fileName')[0].files[0];
+    data.append('file', file);
+    var xhrOverwrite = function() {
             myXhr = $.ajaxSettings.xhr();
             if(myXhr.upload){
-                myXhr.upload.addEventListener('progress',function (event) {
-                                                    　　　　if (event.lengthComputable) {
-                                                    　　　　　　var complete = (event.loaded / event.total * 100 | 0);
-                                                    　　　　　　$('#uploadprogress').val(complete);
-                                                    　　　　　　if (complete == 100) {
-                                                                    $('#progUpdate').empty().append("Upload Complete");
-                                                                }
-                                                    　　　　}
-                                                         }, false);
+                myXhr.upload.addEventListener('progress',progressBar, false);
             }
             return myXhr;
-        },
+    };
+    var progressBar = function (event) {
+　　　　if (event.lengthComputable) {
+　　　　　　var complete = (event.loaded / event.total * 100 | 0);
+　　　　　　$('.bar').css({"width":complete+"%"});
+            if(complete = 100){
+                //$(".progress").attr({"class":"progress progress-success"});
+            }
+        }
+    };
+    var scrollResult = function(data){
+        if(null!=data.filename){
+            $(".progress").addClass("progress-success");
+            $(".alert").remove();
+            $(".progress").after("<div class='alert alert-success'>uploaded! file name:<a href='../file/"+data.filename+"'>"+data.filename+"</a></div>")
+        }else if(null!= data.errorcode){
+            $(".progress").addClass("progress-danger");
+            $(".alert").remove();
+            $(".progress").after("<div class='alert alert-error'>failed:"+data.errorcode+"</div>");
+
+        }
+    };
+    var beforeSendCall = function(){
+        $(".progress").show();
+        $(".progress").attr({"class":"progress progress-striped active"});
+        $(".bar").css({"width":"0%"});
+    };
+    var successCall = function (data) {
+        scrollResult(data);
+    };
+    var errorCall = function(data,textStatus,errorThrown){
+            $("#uploadprogress").hide();
+            var err;
+            if (textStatus !== "abort" && errorThrown !== "abort") {
+
+            }
+    };
+    $.ajax({
+        url: '/file/save',
+        xhr: xhrOverwrite,
         data: data,
         processData: false,
         type: 'POST',
         contentType: false,
-        // Now you should be able to do this:
-        mimeType: 'multipart/form-data',    //Property added in 1.5.1
-
-        beforeSend: function(){
-         $("#uploadprogress").show();
-        },
-        error: function(data,textStatus,errorThrown){
-            $("#uploadprogress").hide();
-            var err;
-            if (textStatus !== "abort" && errorThrown !== "abort") {
-                try {
-                    err = $.parseJSON(data.responseText);
-                    alert(err.Message);
-                } catch(e) {
-                    alert("ERROR:\n" + data.responseText);
-                }
-            }
-        },
-        success: function (data) {
-            var resp = $.parseJSON(data)
-            $("#uploadprogress").animate({"left":"-=80px"}).hide(1000,function(){
-                    $("#progUpdate").empty().html("uploaded! url:<a href='"+resp.filePath+"'>"+resp.filePath+"</a>")
-                    });
-        }
+        //mimeType: 'multipart/form-data',    //Property added in 1.5.1
+        beforeSend:beforeSendCall,
+        error:errorCall,
+        success:successCall
     });
 }
 

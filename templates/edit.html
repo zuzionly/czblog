@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 {% extends "layout.html" %}
 {% block head %}
 {% if post.draft %}
@@ -17,40 +17,39 @@
     })
 </script>
 {% endif %}
+{% block css %}
+<style>
+    #uploadprogress {
+        position: relative;
+        display:none;
+    }
+
+    #progUpdate {
+        position: relative;
+    }
+</style>
+{% endblock %}
 {% endblock %}
 {% block content %}
 <div class="slider">
-    <div class="container-fluid">
-        <div class="row-fluid">
-            <form accept-charset="UTF-8" action="" class="form-inline" id="edit_post" method="post">
+    <div class="container">
+        <form accept-charset="UTF-8" action="" class="form-horizontal" id="edit_post" method="post">
+            <div class="row-fluid">
                 <div class="span1 offset1">
-                    <div class="span1 offset5">
-                        <div class="row">
-                            <span class="label label-inverse">Titile:</span>
-                            <br/>
-                            <br/>
-                        </div>
-                        <div class="row">
-                            <span class="label label-inverse">Options:</span>
-                            <br/>
-                            <br/><br/>
-                        </div>
-                        <div class="row">
-                            <span class="label label-inverse">Content:</span>
-                        </div>
-
-                    </div>
-                </div><!-- end span1 offset1-->
+                    <span class="label label-inverse">Titile:</span>
+                </div>
                 <div class="span7">
-                    <div class="row-fluid">
-                        <div class="span12">
-                            <div class="expandingArea text-title">
-                                <input type="text" class="input-block-level" id="post_title" name="post_title" placeholder="Title here" value="{{ post.title }}">
-
-                                </input>
-                            </div>
-                        </div>
-                    </div><!-- end title row-->
+                    <div class="expandingArea text-title">
+                        <input type="text" class="input-block-level" id="post_title" name="post_title" placeholder="Title here" value="{{ post.title }}">
+                        </input>
+                    </div>
+                </div>
+            </div>
+            <div class="row-fluid">
+                <div class="span1 offset1">
+                    <span class="label label-inverse">Options:</span>
+                </div>
+                <div class="span7">
                     <div class="row-fluid">
                         <div class="nav-pills span12" >
                             <div class="input-append">
@@ -83,31 +82,31 @@
                             <button class="btn btn-inverse" onclick="$('#edit_post').submit()">
                                 Save
                             </button>
+                            <button class="btn btn-inverse" onclick="resetProgress();return false;">
+                                Reset
+                            </button>
                         </div>
-                    </div><!--end option row-->
+                    </div>
                     <div class="row-fluid">
-                        <div class="span3">
-                            <progress value="0" max="100" id="uploadprogress" style="display:none;postion:relative">
-                                0
-                            </progress>
-                        </div>
-                        <div id="progUpdate" class="span8">
-                            <!-- Success Message -->
-                        </div>​
-                    </div><!-- end status row-->
-                    <div class="row-fluid">
-                        <div class="span12">
-                            <div class="expandingArea text-content" id="edit_post_area">
-                                <textarea rows="20" class="input-block-level" id="post_content" name="post_content" placeholder="Write post here">{{ post.text }}</textarea>
+                        <div id="progressBar">
+                            <div class="progress progress-striped active" hidden>
+                              <div class="bar" style="width:0%;"></div>
                             </div>
                         </div>
-                    </div><!-- end content row-->
-                </div><!-- end span7-->
-                <div class="span3 hide">
-                    preview
+                    </div>
                 </div>
-            </form>
-        </div>
+            </div>
+            <div class="row-fluid">
+                <div class="span1 offset1">
+                    <span class="label label-inverse">Content:</span>
+                </div>
+                <div class="span7">
+                    <div class="expandingArea text-content" id="edit_post_area">
+                        <textarea rows="20" class="input-block-level" id="post_content" name="post_content" placeholder="Write post here">{{ post.text }}</textarea>
+                    </div>
+                </div>
+            </div>
+        </form>
     </div>
 </div>
 {% endblock %}

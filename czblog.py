@@ -13,7 +13,7 @@ import markdown
 from flask.ext.sqlalchemy import SQLAlchemy
 from werkzeug.security import check_password_hash
 from flask import render_template, request, Flask, flash, redirect, url_for, \
-                  abort, jsonify, Response, make_response
+                  abort, jsonify, Response, make_response,send_from_directory
 from werkzeug.contrib.cache import FileSystemCache, NullCache
 from werkzeug import secure_filename
 
@@ -217,7 +217,7 @@ def edit(post_id):
         return abort(404)
 
     if request.method == "GET":
-        return render_template("edit.html", post=post,is_admin=is_admin())
+        return render_template("edit2.html", post=post,is_admin=is_admin())
     else:
         if post.title != request.form.get("post_title", ""):
             post.title = request.form.get("post_title","")
@@ -361,17 +361,24 @@ def allowed_file(filename):
 @app.route("/file/save", methods=["POST"])
 @requires_authentication
 def save_files():
-    filePath = None
     if request.method == 'POST':
             file = request.files['file']
             if file and allowed_file(file.filename.lower()):
                 filename = secure_filename(file.filename)
                 if '.' not in filename:
                     filename = secure_filename("%s.%s" % (datetime.datetime.now(), filename))
-                filePath = "http://%s/%s/%s" % (app.config['DOMAIN'],app.config['UPLOAD_FOLDER'], filename)
-                file.save(os.path.join(app.config['PATH'],app.config['UPLOAD_FOLDER'], filename))
-    if filePath:
-        return jsonify(filePath=filePath)
+                try:
+                    file.save(os.path.join(app.config['PATH'],app.config['UPLOAD_FOLDER'], filename))
+                    return jsonify(filename=filename)
+                except:
+                    return jsonify(errorcode="save file failed!")
+            else:
+                return jsonify(errorcode="file type is not allowed!")
+
+@app.route('/file/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'],
+                               filename)
 
 def slugify(text, delim=u'-'):
     """Generates an slightly worse ASCII-only slug."""
