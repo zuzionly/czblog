@@ -119,10 +119,6 @@ function sendMail(id,title){
         }else if (data.success==false){
             $("#result-"+id).html("<div class='alert alert-error'>send failed!</div>")
         }
-        if (redirect)
-        {
-            var win = window.open("/preview/"+id, '_blank');
-        }
     });
 
 }
