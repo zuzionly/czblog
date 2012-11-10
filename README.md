@@ -9,7 +9,7 @@ Installation
 ============
 
 ###Prerequisite
-    pip install -r requirements.txt.
+    pip install -r requirements.txt
 
 ###Customize the Configuration
     python create_config.py
