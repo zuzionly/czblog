@@ -26,7 +26,7 @@ Then cd to the directory containing simple.py and run the following command:
 
 This will start 4 gunicorn workers serving czblog. You can then use nginx or apache to forward requests to Gunicorn.
 
-watch dog
+[watch dog](https://github.com/gorakhargosh/watchdog)
 =============
 ######listen python file change and auto restart gunicorn(gunicorn no auto restart option)
 
