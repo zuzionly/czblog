@@ -1,6 +1,7 @@
 *.pyc
 *.db
 *.*~
+*.log
 /settings.py
 cache/
 venv/
