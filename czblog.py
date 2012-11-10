@@ -137,6 +137,11 @@ def mail(post_id):
         else:
             return jsonify(success=False)
     except:
+        app.logger.error("-----send mail fail----------")
+        app.logger.error(datetime.datetime.now())
+        app.logger.error('exception caught: ' + trace_back())
+        app.logger.error('Post id:'+str(post_id))
+        app.logger.error("-----------------------------")
         return jsonify(success=False)
 
 
