@@ -35,17 +35,6 @@ This will start 4 gunicorn workers serving czblog. You can then use nginx or apa
 ###command line:
     watchmedo shell-command --patterns="*.py" --recursive --command='kill -HUP `cat /tmp/gunicorn.pid`' /czblog
 
-
-watch dog 
-=============
-######listen python file change and auto restart gunicorn(gunicorn no auto restart option)
-
-###install:
-    pip install watchdog
-###command line:
-    watchmedo shell-command --patterns="*.py" --recursive --command='kill -HUP `cat /tmp/gunicorn.pid`' /simple
-
-
 Example
 ============
 You can see my blog running this software [here](http://chuan7i.com).
