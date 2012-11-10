@@ -35,6 +35,10 @@
     <div class="container">
         <form accept-charset="UTF-8" action="" class="form-horizontal" id="edit_post" method="post">
             <div class="row-fluid">
+                <div id="result">
+                </div>
+            </div>
+            <div class="row-fluid">
                 <div class="span1 offset1">
                     <span class="label label-inverse">Titile:</span>
                 </div>
@@ -79,7 +83,7 @@
                             <a class="btn btn-inverse" href="{{ url_for('delete', post_id=post.id, next="admin") }}" data-pjax="{{ url_for('delete', post_id=post.id, next="admin") }}">
                                 Delete
                             </a>
-                            <button class="btn btn-inverse" onclick="$('#edit_post').submit()">
+                            <button class="btn btn-inverse" onclick="issueSaveAjax({{ post.id }}, false); return false;">
                                 Save
                             </button>
                             <button class="btn btn-inverse" onclick="resetProgress();return false;">

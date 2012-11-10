@@ -37,25 +37,6 @@
     return this;
 };
 
-function issueSaveAjax(id, redirect){
-    var ptitle   = $("#post_title").val();
-    var pcontent = $("#post_content").val();
-    var req = $.ajax({
-        type: "POST",
-        url:"/admin/save/"+id,
-        data: {title: ptitle,
-               content: pcontent}
-    });
-    req.done(function(message)
-    {
-        if (redirect)
-        {
-            var win = window.open("/preview/"+id, '_blank');
-        }
-    })
-};
-
-
 function resetProgress(){
     $(".progress").hide();
     $(".alert").remove();
@@ -122,7 +103,30 @@ function uploadFile(){
     });
 }
 
+function issueSaveAjax(id, redirect){
+    var ptitle   = $("#post_title").val();
+    var pcontent = $("#post_content").val();
+    var req = $.ajax({
+        type: "POST",
+        url:"/admin/save/"+id,
+        data: {title: ptitle,
+               content: pcontent}
+    }).done(function(data)
+    {
+        if(data.success==true){
+            $("#result").html("<div class='alert alert-success'>save success!</div>")
+        }else if (data.success==false){
+            $("#result").html("<div class='alert alert-error'>save failed!</div>")
+        }
+        if (redirect)
+        {
+            var win = window.open("/preview/"+id, '_blank');
+        }
+    });
+};
+
 function save_settings(redirect){
+
     var sPOSTS_PER_PAGE = $("#POSTS_PER_PAGE").val();
     var sPOST_CONTENT_ON_HOMEPAGE = $("input[name='POST_CONTENT_ON_HOMEPAGE']:checked").val();
     var sSHOW_VIEWS_ON_HOMEPAGE = $("input[name='SHOW_VIEWS_ON_HOMEPAGE']:checked").val();
@@ -134,6 +138,7 @@ function save_settings(redirect){
     var sBLOG_TITLE = $("#BLOG_TITLE").val();
     var sBLOG_TAGLINE = $("#BLOG_TAGLINE").val();
     var sFONT_NAME = $("#FONT_NAME").val();
+    var sDISQUS_NAME = $("#DISQUS_NAME").val();
     var req = $.ajax({
         type: "POST",
         url:"/settings/save",
@@ -148,34 +153,19 @@ function save_settings(redirect){
         CONTACT_EMAIL : sCONTACT_EMAIL,
         BLOG_TITLE : sBLOG_TITLE,
         BLOG_TAGLINE : sBLOG_TAGLINE,
+        DISQUS_NAME: sDISQUS_NAME,
         FONT_NAME : sFONT_NAME
         }
-    });
-    req.done(function(message)
+
+    }).done(function(data)
     {
-        if (redirect)
-        {
-            //todo
+        if(data.success==true){
+            $("#result").html("<div class='alert alert-success'>save success!</div>")
+        }else if (data.success==false){
+            $("#result").html("<div class='alert alert-error'>save failed!</div>")
         }
-    })
-};
-
-
-// run on load
-$(function(){
-    preRender();
-    render();
-    bindTabs();
-    jQuery.ias({
-    	container : '.listing',
-    	item: '.post',
-    	pagination: '.pager',
-    	next: '.next a',
-    	loader: '<img src="/static/img/loader.gif"/>',
-        noneleft:true
     });
-});
-
+};
 
 
 function render(){
@@ -274,6 +264,21 @@ function bindTabs(){
     //end bind tab
 
 }
+
+// run on load
+$(function(){
+    preRender();
+    render();
+    bindTabs();
+    jQuery.ias({
+    	container : '.listing',
+    	item: '.post',
+    	pagination: '.pager',
+    	next: '.next a',
+    	loader: '<img src="/static/img/loader.gif"/>',
+        noneleft:true
+    });
+});
 
 $('#wrap').delegate('a[data-pjax]', 'click', function(e) {
     e.preventDefault();

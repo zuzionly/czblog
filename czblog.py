@@ -16,11 +16,17 @@ from flask import render_template, request, Flask, flash, redirect, url_for, \
                   abort, jsonify, Response, make_response,send_from_directory
 from werkzeug.contrib.cache import FileSystemCache, NullCache
 from werkzeug import secure_filename
+import logging
 
 
 app = Flask(__name__)
 app.config.from_object('settings_core')
 app.config.from_object('settings_custom')
+# set file logger handler
+file_handler = logging.FileHandler("czblog.log", mode='a', encoding="utf8", delay=False)
+file_handler.setLevel(logging.ERROR)
+app.logger.addHandler(file_handler)
+
 db = SQLAlchemy(app)
 cache_directory = os.path.dirname(__file__)
 try:
@@ -36,7 +42,7 @@ MARKDOWN_PARSER = markdown.Markdown(extensions=['fenced_code'],
                                     output_format="html5",
                                     safe_mode=True)
 
-
+app.secret_key = "$\xb8\xf1\xdf\xd4\x9c\xcf5\xcb\x9f\xb2On\x12\xde\xcb\x8f\xa5\xd6\t\x85\xdf\xe2Y\xc8\xfb\xcd\x05-u"
 
 def trace_back():
     try:
@@ -157,9 +163,11 @@ def view_post(post_id):
     try:
         post = db.session.query(Post).filter_by(id=post_id, draft=False).one()
     except Exception:
+        app.logger.error("---------------------")
         app.logger.error(datetime.datetime.now())
         app.logger.error('exception caught: ' + trace_back())
         app.logger.error('Post id:'+str(post_id))
+        app.logger.error("---------------------")
         return abort(404)
 
     db.session.query(Post)\
@@ -175,9 +183,11 @@ def view_post_slug(slug):
         post = db.session.query(Post).filter_by(slug=slug,draft=False).one()
     except Exception:
         #TODO: Better exception
+        app.logger.error("---------------------")
         app.logger.error(datetime.datetime.now())
         app.logger.error('exception caught: ' + trace_back())
         app.logger.error('slug:'+slug)
+        app.logger.error("---------------------")
         return abort(404)
 
     if not any(botname in request.user_agent.string for botname in
@@ -211,9 +221,11 @@ def edit(post_id):
         post = db.session.query(Post).filter_by(id=post_id).one()
     except Exception:
         #TODO: better exception
+        app.logger.error("---------------------")
         app.logger.error(datetime.datetime.now())
         app.logger.error('exception caught: ' + trace_back())
         app.logger.error('Post id:'+str(post_id))
+        app.logger.error("---------------------")
         return abort(404)
 
     if request.method == "GET":
@@ -241,10 +253,13 @@ def delete(post_id):
         post = db.session.query(Post).filter_by(id=post_id).one()
     except Exception:
         # TODO: define better exceptions for db failure.
+        app.logger.error("---------------------")
         app.logger.error(datetime.datetime.now())
         app.logger.error('exception caught: ' + trace_back())
         app.logger.error('Post id:'+str(post_id))
+        app.logger.error("---------------------")
         flash("Error deleting post ID %s"%post_id, category="error")
+        return abort(500)
     else:
         db.session.delete(post)
         db.session.commit()
@@ -271,9 +286,11 @@ def save_post(post_id):
         post = db.session.query(Post).filter_by(id=post_id).one()
     except Exception:
         # TODO Better exception
+        app.logger.error("---------------------")
         app.logger.error(datetime.datetime.now())
         app.logger.error('exception caught: ' + trace_back())
         app.logger.error('Post id:'+post_id)
+        app.logger.error("---------------------")
         return abort(404)
     if post.title != request.form.get("title", ""):
         post.title = request.form.get("title","")
@@ -291,9 +308,11 @@ def preview(post_id):
         post = db.session.query(Post).filter_by(id=post_id).one()
     except Exception:
         # TODO: Better exception
+        app.logger.error("---------------------")
         app.logger.error(datetime.datetime.now())
         app.logger.error('exception caught: ' + trace_back())
         app.logger.error('Post id:'+post_id)
+        app.logger.error("---------------------")
         return abort(404)
 
     return render_template("post_preview.html", post=post)
@@ -321,13 +340,16 @@ def save_settings():
                      'DISQUS_NAME':None,\
                      'FONT_NAME':None}
     # only save changed value
+    try:
+        for i in custom_config:
+            if(app.config[i]!= request.form.get(i)):
+                custom_config[i] = request.form.get(i)
+                updateSettingFile(i,str(custom_config[i]))
 
-    for i in custom_config:
-        if(app.config[i]!= request.form.get(i)):
-            custom_config[i] = request.form.get(i)
-            updateSettingFile(i,str(custom_config[i]))
+        return jsonify(success=True)
+    except:
+        return jsonify(success=False)
 
-    return jsonify(success=True)
 
 def updateSettingFile(paraName,paraValue):
     oldFile = open('settings_custom.py')
@@ -335,10 +357,6 @@ def updateSettingFile(paraName,paraValue):
     oldFile.close()
     # replace the new field
     newFileContent = re.sub(paraName+''' = "'''+str(app.config[paraName])+'''"''', paraName+''' = "'''+ paraValue+'''"''', oldFileContent)
-##    #for testing
-##    print(paraName+''' = "'''+str(app.config[paraName])+'''"''')
-##    print(paraName+''' = "'''+ paraValue+'''"''')
-##    print(newFileContent)
     if newFileContent != oldFileContent and newFileContent != None:
         open('settings_custom.py', 'wb').write(newFileContent)
 
@@ -350,7 +368,7 @@ def feed():
                 .limit(10)\
                 .all()
 
-    response = make_response(render_template('index.xml', posts=posts))
+    response = make_response(render_template('index.xml'))
     response.mimetype = "application/xml"
     return response
 
@@ -379,6 +397,14 @@ def save_files():
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'],
                                filename)
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html',now=datetime.datetime.now(),is_admin=is_admin()), 404
+
+@app.errorhandler(500)
+def internal_error(e):
+    return render_template('500.html',now=datetime.datetime.now(),is_admin=is_admin()), 500
 
 def slugify(text, delim=u'-'):
     """Generates an slightly worse ASCII-only slug."""
