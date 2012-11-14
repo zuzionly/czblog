@@ -129,8 +129,7 @@ function issueSaveAjax(id, redirect){
         type: "POST",
         url:"/admin/save/"+id,
         data: {title: pTitle,
-               content: pContent,
-               status:pStatus}
+               content: pContent}
     }).done(function(data)
     {
         if(data.success==true){
