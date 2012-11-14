@@ -45,9 +45,15 @@
           height: 50px;
           margin: 0 auto;
         }
+        #uploadprogress {
+            position: relative;
+            display:none;
+        }
+
+        #progUpdate {
+            position: relative;
+        }
         </style>
-        {% endblock%}
-        {% block js %}
         {% endblock%}
     </head>
     <body>
@@ -162,6 +168,7 @@
     <script src="{{ url_for('static', filename='js/pjax.js') }}"></script>
     <script src="{{ url_for('static', filename='js/jquery.ias.min.js') }}" type="text/javascript"></script>
     <script src="{{ url_for('static', filename='js/functions.js') }}"></script>
+    {% block js %}{% endblock %}
     <!-- google analytics-->
     {% if config["ANALYTICS_ID"]  %}
         <script>

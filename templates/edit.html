@@ -1,35 +1,8 @@
 <!DOCTYPE html>
 {% extends "layout.html" %}
-{% block head %}
-{% if post.draft %}
-<script type="text/javascript">
-    function SaveTick() {
-        issueSaveAjax({
-            {
-                post.id
-            }
-        },
-        false);
-        setTimeout("SaveTick()", 10000)
-    }
-    $(document).ready(function() {
-        setTimeout("SaveTick();", 10000);
-    })
-</script>
-{% endif %}
-{% block css %}
-<style>
-    #uploadprogress {
-        position: relative;
-        display:none;
-    }
 
-    #progUpdate {
-        position: relative;
-    }
-</style>
-{% endblock %}
-{% endblock %}
+{% block title %}<title>{{ post.title }} - {{ config.BLOG_TITLE }}</title>{% endblock %}
+
 {% block content %}
 <div class="slider">
     <div class="container">
@@ -60,7 +33,7 @@
                                 <a class="btn btn-inverse add-on">
                                     <i class="icon-trash icon-white"></i>
                                 </a>
-                                <input id="post_draft" name="post_draft" type="checkbox" value="1" {% if post.draft %}checked{% endif %} />
+                                <input id="post_status" name="post_status" type="checkbox" value="{{ post.draft }}" {% if post.draft==1 %}checked{% endif %} />
                             </div>
                             <div class="input-append">
                                 <input style="display:none" id="fileName" name="files[]" type="file" multiple="multiple">
@@ -69,17 +42,17 @@
                                 <input id="attach" class="input" type="text">
                                 <button id="uploadBtn" class="btn btn-inverse" onClick="uploadFile();return false">upload</button>
                             </div>
-                            {% if post.draft %}
-                            <a class="btn btn-inverse" href="#" onclick="issueSaveAjax({{ post.id }}, true); return false;"
+
+                            <a class="btn btn-inverse" id="preview" href="#" onclick="issueSaveAjax({{ post.id }}, true); return false;"
                             target="_blank">
                                 Preview
                             </a>
-                            {% else %}
-                            <a class="btn btn-inverse" href="{{  url_for('view_post_slug', slug=post.slug) }}" data-pjax="{{  url_for('view_post_slug', slug=post.slug) }}"
+
+                            <a class="btn btn-inverse" id="view" href="{{  url_for('view_post_slug', slug=post.slug) }}" data-pjax="{{  url_for('view_post_slug', slug=post.slug) }}"
                             target="_blank">
                                 View live
                             </a>
-                            {% endif %}
+
                             <a class="btn btn-inverse" href="{{ url_for('delete', post_id=post.id, next="admin") }}" data-pjax="{{ url_for('delete', post_id=post.id, next="admin") }}">
                                 Delete
                             </a>
@@ -113,4 +86,23 @@
         </form>
     </div>
 </div>
+{% block js %}
+<script type="text/javascript">
+    function SaveTick() {
+        issueSaveAjax({{ post.id }},false);
+        setTimeout("SaveTick()", 10000)
+    };
+    $(function(){
+        setTimeout("SaveTick();", 10000);
+        var pStatus   = $("#post_status").attr("checked")=='checked'?'True':'False';
+        if(pStatus=='True'){
+            $("#preview").show();
+            $("#view").hide();
+        }else{
+            $("#preview").hide();
+            $("#view").show();
+        }
+    })
+</script>
+{% endblock %}
 {% endblock %}

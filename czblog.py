@@ -273,7 +273,7 @@ def edit(post_id):
         post.set_content(request.form.get("post_content",""))
         post.updated_at = datetime.datetime.now()
 
-        if any(request.form.getlist("post_draft", type=int)):
+        if any(request.form.getlist("post_status", type=int)):
             post.draft = True
         else:
             post.draft = False
@@ -332,6 +332,10 @@ def save_post(post_id):
         post.title = request.form.get("title","")
         post.slug = slugify(post.title)
     post.set_content(request.form.get("content", ""))
+    if str(request.form.get("status")) == 'True':
+        post.draft = True
+    else:
+        post.draft = False
     post.updated_at = datetime.datetime.now()
     db.session.add(post)
     db.session.commit()

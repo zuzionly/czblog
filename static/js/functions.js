@@ -123,17 +123,26 @@ function sendMail(id,title){
 
 }
 function issueSaveAjax(id, redirect){
-    var ptitle   = $("#post_title").val();
-    var pcontent = $("#post_content").val();
+    var pTitle   = $("#post_title").val();
+    var pContent = $("#post_content").val();
+    var pStatus   = $("#post_status").attr("checked")=='checked'?'True':'False';
     var req = $.ajax({
         type: "POST",
         url:"/admin/save/"+id,
-        data: {title: ptitle,
-               content: pcontent}
+        data: {title: pTitle,
+               content: pContent,
+               status:pStatus}
     }).done(function(data)
     {
         if(data.success==true){
             $("#result").html("<div class='alert alert-success'>save success!</div>")
+            if(pStatus=='True'){
+                $("#preview").show();
+                $("#view").hide();
+            }else{
+                $("#preview").hide();
+                $("#view").show();
+            }
         }else if (data.success==false){
             $("#result").html("<div class='alert alert-error'>save failed!</div>")
         }
