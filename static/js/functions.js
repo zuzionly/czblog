@@ -35,7 +35,7 @@
     });
 
     return this;
-};
+}
 
 function resetProgress(){
     $(".progress").hide();
@@ -101,7 +101,7 @@ function uploadFile(){
         error:errorCall,
         success:successCall
     });
-};
+}
 
 function sendMail(id,title){
     var title = title,
@@ -142,7 +142,7 @@ function issueSaveAjax(id, redirect){
             var win = window.open("/preview/"+id, '_blank');
         }
     });
-};
+}
 
 function save_settings(redirect){
 
@@ -184,7 +184,7 @@ function save_settings(redirect){
             $("#result").html("<div class='alert alert-error'>save failed!</div>")
         }
     });
-};
+}
 
 
 function render(){
@@ -315,3 +315,13 @@ $('#wrap').delegate('a[data-pjax]', 'click', function(e) {
          });
      }
 });
+
+$(window).bind('popstate', function (e) {
+    //prevent slide right when reload or scroll down/up
+    if (e.originalEvent.state) {
+        $('.slider').animate({"left":"+=1500px"}, "slow");
+    }
+});
+
+
+
