@@ -23,6 +23,7 @@ SETTINGS_CORE = (
 
 with open("settings_core.py", "w") as fd:
     fd.write("""# -*- coding: utf-8 -*-\n
+import os
 ADMIN_USERNAME =  '%s'
 ADMIN_PASSWORD = '%s'
 SQLALCHEMY_DATABASE_URI = "%s"
