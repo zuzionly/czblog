@@ -319,7 +319,10 @@ $('#wrap').delegate('a[data-pjax]', 'click', function(e) {
 $(window).bind('popstate', function (e) {
     //prevent slide right when reload or scroll down/up
     if (e.originalEvent.state) {
-        $('.slider').animate({"left":"+=1500px"}, "slow");
+        var url = location.href
+        if(url.split('/').length<4 || (url.split('/').length>=4 && url.split('/')[3]!='post')){
+            $('.slider').animate({"left":"+=1500px"}, "slow");
+        }
     }
 });
 
