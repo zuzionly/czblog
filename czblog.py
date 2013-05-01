@@ -144,6 +144,11 @@ def mail(post_id):
         app.logger.error("-----------------------------")
         return jsonify(success=False)
 
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(
+            os.path.join(app.root_path, 'static'),
+                'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 @app.route("/")
 def index():
