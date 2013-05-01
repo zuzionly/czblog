@@ -1,7 +1,11 @@
 <!DOCTYPE html>
 {% extends "layout.html" %}
 
-{% block title %}<title>{{ post.title }} - {{ config.BLOG_TITLE }}</title>{% endblock %}
+{% block title %}<title>{{ post.title }} - {{ config.BLOG_TITLE }}</title>
+<!--wmd editor-->
+<link rel="stylesheet" type="text/css" href="../static/css/wmd.css" />
+<script type="text/javascript" src="../static/js/showdown.js"></script>
+{% endblock %}
 
 {% block content %}
 <div class="slider">
@@ -78,9 +82,19 @@
                     <span class="label label-inverse">Content:</span>
                 </div>
                 <div class="span7">
-                    <div class="expandingArea text-content" id="edit_post_area">
-                        <textarea rows="20" class="input-block-level" id="post_content" name="post_content" placeholder="Write post here">{{ post.text }}</textarea>
+                    <div class="row-fluid">
+                        <div class="nav-pills span12" >
+                            <div id="wmd-button-bar" class=""></div>
+                        </div>
                     </div>
+                </div>
+                <div class="span7">
+                    <div class="expandingArea text-content" id="edit_post_area">
+                        <textarea rows="20" class="input-block-level wmd-panel" id="wmd-input" name="post_content" placeholder="Write post here">{{ post.text }}</textarea>
+                    </div>
+                    <br/>
+                    <div id="wmd-preview" class="wmd-panel"></div>
+                    <br/>
                 </div>
             </div>
         </form>
@@ -99,4 +113,5 @@
 </script>
 {% endif %}
 {% endblock %}
+<script type="text/javascript" src="../static/js/wmd.js"></script>
 {% endblock %}
