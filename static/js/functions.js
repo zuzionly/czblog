@@ -295,7 +295,13 @@ $(function(){
     	pagination: '.pager',
     	next: '.next a',
     	loader: '<img src="/static/img/loader.gif"/>',
-        noneleft:true
+        triggerPageThreshold: 2,
+        history:false,
+        noneleft:true,
+        onRenderComplete: function(items) {
+            $('pre').addClass('prettyprint').addClass("linenums").addClass('pre-scrollable');
+            prettyPrint();
+        }
     });
 });
 

@@ -1,15 +1,20 @@
 /*!
  * Infinite Ajax Scroll, a jQuery plugin
- * Version v0.1.6
- * http://webcreate.nl/
+ * Version 1.0.2
+ * https://github.com/webcreate/infinite-ajax-scroll
  *
- * Copyright (c) 2011-2012 Jeroen Fiege
- * Licensed under the MIT License:
- * http://webcreate.nl/license
+ * Copyright (c) 2011-2013 Jeroen Fiege
+ * Licensed under MIT:
+ * https://raw.github.com/webcreate/infinite-ajax-scroll/master/MIT-LICENSE.txt
  */
 
-(function($) {
-    $.ias = function(options)
+(function ($) {
+
+    'use strict';
+
+    Date.now = Date.now || function () { return +new Date(); };
+
+    $.ias = function (options)
     {
         // setup
         var opts             = $.extend({}, $.ias.defaults, options);
@@ -17,9 +22,6 @@
         var paging           = new $.ias.paging(opts.scrollContainer);          // paging module
         var hist             = (opts.history ? new $.ias.history() : false);    // history module
         var _self            = this;
-
-        // initialize
-        init();
 
         /**
          * Initialize
@@ -33,9 +35,13 @@
          */
         function init()
         {
+            var pageNum;
+
             // track page number changes
-            paging.onChangePage(function(pageNum, scrollOffset, pageUrl) {
-                if (hist) hist.setPage(pageNum, pageUrl);
+            paging.onChangePage(function (pageNum, scrollOffset, pageUrl) {
+                if (hist) {
+                    hist.setPage(pageNum, pageUrl);
+                }
 
                 // call onPageChange event
                 opts.onPageChange.call(this, pageNum, pageUrl, scrollOffset);
@@ -50,12 +56,14 @@
 
                 pageNum = hist.getPage();
 
-                util.forceScrollTop(function() {
+                util.forceScrollTop(function () {
+                    var curThreshold;
+
                     if (pageNum > 1) {
                         paginateToPage(pageNum);
 
-                        curTreshold = get_scroll_treshold(true);
-                        $("html,body").scrollTop(curTreshold);
+                        curThreshold = get_scroll_threshold(true);
+                        $('html, body').scrollTop(curThreshold);
                     }
                     else {
                         reset();
@@ -65,6 +73,9 @@
 
             return _self;
         }
+
+        // initialize
+        init();
 
         /**
          * Reset scrolling and hide pagination links
@@ -85,19 +96,22 @@
          */
         function scroll_handler()
         {
-            // the way we calculate if have to load the next page depend on which container we have
-            if (opts.scrollContainer == $.ias.defaults.scrollContainer){
-                scrTop = opts.scrollContainer.scrollTop();
-            } else{
-                scrTop = opts.scrollContainer.offset().top;
-            }
+            var curScrOffset,
+                scrThreshold;
 
-            wndHeight = opts.scrollContainer.height();
+            curScrOffset = util.getCurrentScrollOffset(opts.scrollContainer);
+            scrThreshold = get_scroll_threshold();
 
-            curScrOffset = scrTop + wndHeight;
-
-            if (curScrOffset >= get_scroll_treshold()) {
-                paginate(curScrOffset);
+            if (curScrOffset >= scrThreshold) {
+                if (get_current_page() >= opts.triggerPageThreshold) {
+                    stop_scroll();
+                    show_trigger(function () {
+                        paginate(curScrOffset);
+                    });
+                }
+                else {
+                    paginate(curScrOffset);
+                }
             }
         }
 
@@ -122,35 +136,43 @@
         }
 
         /**
-         * Get scroll treshold based on the last item element
+         * Get scroll threshold based on the last item element
          *
-         * @param boolean pure indicates if the tresholdMargin should be applied
-         * @return integer treshold
+         * @param boolean pure indicates if the thresholdMargin should be applied
+         * @return integer threshold
          */
-        function get_scroll_treshold(pure)
+        function get_scroll_threshold(pure)
         {
+            var el,
+                threshold;
+
             el = $(opts.container).find(opts.item).last();
 
-            if (el.size() == 0) return 0;
+            if (el.size() === 0) {
+                return 0;
+            }
 
-            treshold = el.offset().top + el.height();
+            threshold = el.offset().top + el.height();
 
-            if (!pure)
-                treshold += opts.tresholdMargin;
+            if (!pure) {
+                threshold += opts.thresholdMargin;
+            }
 
-            return treshold;
+            return threshold;
         }
 
         /**
          * Load the items from the next page.
          *
-         * @param int curScrOffset current scroll offset
+         * @param int      curScrOffset      current scroll offset
          * @param function onCompleteHandler callback function
          * @return void
          */
         function paginate(curScrOffset, onCompleteHandler)
         {
-            urlNextPage = $(opts.next).attr("href");
+            var urlNextPage;
+
+            urlNextPage = $(opts.next).attr('href');
             if (!urlNextPage) {
                 if (opts.noneleft) {
                     $(opts.container).find(opts.item).last().after(opts.noneleft);
@@ -159,7 +181,9 @@
             }
 
             if (opts.beforePageChange && $.isFunction(opts.beforePageChange)) {
-                if (opts.beforePageChange(curScrOffset, urlNextPage) === false) return;
+                if (opts.beforePageChange(curScrOffset, urlNextPage) === false) {
+                    return;
+                }
             }
 
             paging.pushPages(curScrOffset, urlNextPage);
@@ -167,9 +191,10 @@
             stop_scroll();
             show_loader();
 
-            loadItems(urlNextPage, function(data, items) {
+            loadItems(urlNextPage, function (data, items) {
                 // call the onLoadItems callback
-                result = opts.onLoadItems.call(this, items);
+                var result = opts.onLoadItems.call(this, items),
+                    curLastItem;
 
                 if (result !== false) {
                     $(items).hide();  // at first, hide it so we can fade it in later
@@ -180,16 +205,27 @@
                     $(items).fadeIn();
                 }
 
+                urlNextPage = $(opts.next, data).attr('href');
+
                 // update pagination
                 $(opts.pagination).replaceWith($(opts.pagination, data));
 
                 remove_loader();
-                reset();
+                hide_pagination();
+
+                if (urlNextPage) {
+                    reset();
+                }
+                else {
+                    stop_scroll();
+                }
 
                 // call the onRenderComplete callback
                 opts.onRenderComplete.call(this, items);
 
-                if (onCompleteHandler) onCompleteHandler.call(this);
+                if (onCompleteHandler) {
+                    onCompleteHandler.call(this);
+                }
             });
         }
 
@@ -197,33 +233,49 @@
          * Loads items from certain url, triggers
          * onComplete handler when finished
          *
-         * @param string     the url to load
-         * @param function    the callback function
+         * @param string   the url to load
+         * @param function the callback function
+         * @param int      minimal time the loading should take, defaults to $.ias.default.loaderDelay
          * @return void
          */
-        function loadItems(url, onCompleteHandler)
+        function loadItems(url, onCompleteHandler, delay)
         {
-            var items = [];
+            var items = [],
+                container,
+                startTime = Date.now(),
+                diffTime,
+                self;
 
-            $.get(url, null, function(data) {
+            delay = delay || opts.loaderDelay;
+
+            $.get(url, null, function (data) {
                 // walk through the items on the next page
                 // and add them to the items array
                 container = $(opts.container, data).eq(0);
-                //alert($(".listing",data));
-                if (0 == container.length) {
+                if (0 === container.length) {
                     // incase the element is a root element (body > element),
                     // try to filter it
                     container = $(data).filter(opts.container).eq(0);
                 }
 
                 if (container) {
-                    container.find(opts.item).each(function() {
+                    container.find(opts.item).each(function () {
                         items.push(this);
                     });
                 }
 
-                if (onCompleteHandler) onCompleteHandler.call(this, data, items);
-            }, "html");
+                if (onCompleteHandler) {
+                    self = this;
+                    diffTime = Date.now() - startTime;
+                    if (diffTime < delay) {
+                        setTimeout(function () {
+                            onCompleteHandler.call(self, data, items);
+                        }, delay - diffTime);
+                    } else {
+                        onCompleteHandler.call(self, data, items);
+                    }
+                }
+            }, 'html');
         }
 
         /**
@@ -235,24 +287,31 @@
          */
         function paginateToPage(pageNum)
         {
-            curTreshold = get_scroll_treshold(true);
+            var curThreshold = get_scroll_threshold(true);
 
-            if (curTreshold > 0) {
-                paginate(curTreshold, function() {
+            if (curThreshold > 0) {
+                paginate(curThreshold, function () {
                     stop_scroll();
 
-                    if ((paging.getCurPageNum(curTreshold) + 1) < pageNum) {
+                    if ((paging.getCurPageNum(curThreshold) + 1) < pageNum) {
                         paginateToPage(pageNum);
 
-                        $("html,body").animate({"scrollTop": curTreshold}, 400, "swing");
+                        $('html,body').animate({'scrollTop': curThreshold}, 400, 'swing');
                     }
                     else {
-                        $("html,body").animate({"scrollTop": curTreshold}, 1000, "swing");
+                        $('html,body').animate({'scrollTop': curThreshold}, 1000, 'swing');
 
                         reset();
                     }
                 });
             }
+        }
+
+        function get_current_page()
+        {
+            var curScrOffset = util.getCurrentScrollOffset(opts.scrollContainer);
+
+            return paging.getCurPageNum(curScrOffset);
         }
 
         /**
@@ -262,10 +321,10 @@
          */
         function get_loader()
         {
-            loader = $(".ias_loader");
+            var loader = $('.ias_loader');
 
-            if (loader.size() == 0) {
-                loader = $("<div class='ias_loader'>"+opts.loader+"</div>");
+            if (loader.size() === 0) {
+                loader = $('<div class="ias_loader">' + opts.loader + '</div>');
                 loader.hide();
             }
             return loader;
@@ -278,7 +337,8 @@
          */
         function show_loader()
         {
-            loader = get_loader();
+            var loader = get_loader(),
+                el;
 
             if (opts.customLoaderProc !== false) {
                 opts.customLoaderProc(loader);
@@ -296,21 +356,56 @@
          */
         function remove_loader()
         {
-            loader = get_loader();
+            var loader = get_loader();
             loader.remove();
         }
-    };
 
-    /**
-     * Debug to console when available
-     *
-     * @param object $obj
-     * @return
-     */
-    function debug($obj)
-    {
-        if (window.console && window.console.log)
-            window.console.log($obj);
+        /**
+         * Return the active trigger or creates a new trigger
+         *
+         * @return object trigger jquery object
+         */
+        function get_trigger(callback)
+        {
+            var trigger = $('.ias_trigger');
+
+            if (trigger.size() === 0) {
+                trigger = $('<div class="ias_trigger"><a href="#">' + opts.trigger + '</a></div>');
+                trigger.hide();
+            }
+
+            $('a', trigger)
+                .off('click')
+                .on('click', function () { remove_trigger(); callback.call(); return false; })
+            ;
+
+            return trigger;
+        }
+
+        /**
+         * @param function callback of the trigger (get's called onClick)
+         */
+        function show_trigger(callback)
+        {
+            var trigger = get_trigger(callback),
+                el;
+
+            el = $(opts.container).find(opts.item).last();
+            el.after(trigger);
+            trigger.fadeIn();
+        }
+
+        /**
+         * Removes the trigger.
+         *
+         * return void
+         */
+        function remove_trigger()
+        {
+            var trigger = get_trigger();
+
+            trigger.remove();
+        }
     };
 
     // plugin defaults
@@ -322,25 +417,25 @@
         next: '.next',
         noneleft: false,
         loader: '<img src="images/loader.gif"/>',
-        tresholdMargin: 0,
+        loaderDelay: 600,
+        triggerPageThreshold: 3,
+        trigger: 'Load more items',
+        thresholdMargin: 0,
         history : true,
-        onPageChange: function() {},
-        beforePageChange: function() {},
-        onLoadItems: function() {},
-        onRenderComplete: function() {},
+        onPageChange: function () {},
+        beforePageChange: function () {},
+        onLoadItems: function () {},
+        onRenderComplete: function () {},
         customLoaderProc: false
     };
 
     // utility module
-    $.ias.util = function()
+    $.ias.util = function ()
     {
         // setup
         var wndIsLoaded = false;
         var forceScrollTopIsCompleted = false;
         var self = this;
-
-        // initialize
-        init();
 
         /**
          * Initialize
@@ -354,6 +449,9 @@
             });
         }
 
+        // initialize
+        init();
+
         /**
          * Force browsers to scroll to top.
          *
@@ -364,31 +462,46 @@
          * @param function onComplete callback function
          * @return void
          */
-        this.forceScrollTop = function(onCompleteHandler)
+        this.forceScrollTop = function (onCompleteHandler)
         {
-            $("html,body").scrollTop(0);
+            $('html,body').scrollTop(0);
 
             if (!forceScrollTopIsCompleted) {
                 if (!wndIsLoaded) {
-                    setTimeout(function() {self.forceScrollTop(onCompleteHandler); }, 1);
+                    setTimeout(function () {self.forceScrollTop(onCompleteHandler); }, 1);
                 } else {
                     onCompleteHandler.call();
                     forceScrollTopIsCompleted = true;
                 }
             }
         };
+
+        this.getCurrentScrollOffset = function (container)
+        {
+            var scrTop,
+                wndHeight;
+
+            // the way we calculate if we have to load the next page depends on which container we have
+            if (container.get(0) === window) {
+                scrTop = container.scrollTop();
+            } else {
+                scrTop = container.offset().top;
+            }
+
+            wndHeight = container.height();
+
+            return scrTop + wndHeight;
+        };
     };
 
     // paging module
-    $.ias.paging = function()
+    $.ias.paging = function ()
     {
         // setup
-        var pagebreaks = [[0, document.location.toString()]];
-        var changePageHandler = function() {};
-        var lastPageNum = 1;
-
-        // initialize
-        init();
+        var pagebreaks        = [[0, document.location.toString()]];
+        var changePageHandler = function () {};
+        var lastPageNum       = 1;
+        var util              = new $.ias.util();
 
         /**
          * Initialize
@@ -400,6 +513,9 @@
             $(window).scroll(scroll_handler);
         }
 
+        // initialize
+        init();
+
         /**
          * Scroll handler
          *
@@ -409,16 +525,21 @@
          */
         function scroll_handler()
         {
-            scrTop = $(window).scrollTop();
-            wndHeight = $(window).height();
+            var curScrOffset,
+                curPageNum,
+                curPagebreak,
+                scrOffset,
+                urlPage;
 
-            curScrOffset = scrTop + wndHeight;
+            curScrOffset = util.getCurrentScrollOffset($(window));
 
             curPageNum = getCurPageNum(curScrOffset);
             curPagebreak = getCurPagebreak(curScrOffset);
 
-            if (lastPageNum != curPageNum) {
-                changePageHandler.call(this, curPageNum, curPagebreak[0]/*scrOffset*/, curPagebreak[1]/*urlPage*/); // @todo fix for window height
+            if (lastPageNum !== curPageNum) {
+                scrOffset = curPagebreak[0];
+                urlPage = curPagebreak[1];
+                changePageHandler.call({}, curPageNum, scrOffset, urlPage); // @todo fix for window height
             }
 
             lastPageNum = curPageNum;
@@ -432,7 +553,7 @@
          */
         function getCurPageNum(scrollOffset)
         {
-            for(i=(pagebreaks.length-1);i>0;i--) {
+            for (var i = (pagebreaks.length - 1); i > 0; i--) {
                 if (scrollOffset > pagebreaks[i][0]) {
                     return i + 1;
                 }
@@ -443,10 +564,13 @@
         /**
          * Public function for getCurPageNum
          *
+         * @param int scrollOffset defaulst to the current
          * @return int current page number
          */
-        this.getCurPageNum = function(scrollOffset)
+        this.getCurPageNum = function (scrollOffset)
         {
+            scrollOffset = scrollOffset || util.getCurrentScrollOffset($(window));
+
             return getCurPageNum(scrollOffset);
         };
 
@@ -458,13 +582,13 @@
          */
         function getCurPagebreak(scrollOffset)
         {
-            for(i=(pagebreaks.length-1);i>=0;i--) {
+            for (var i = (pagebreaks.length - 1); i >= 0; i--) {
                 if (scrollOffset > pagebreaks[i][0]) {
                     return pagebreaks[i];
                 }
             }
             return null;
-        };
+        }
 
         /**
          * Sets onchangePage event handler
@@ -472,7 +596,7 @@
          * @param function event handler
          * @return void
          */
-        this.onChangePage = function(fn)
+        this.onChangePage = function (fn)
         {
             changePageHandler = fn;
         };
@@ -483,21 +607,18 @@
          * @param int scroll offset for the new page
          * @return void
          */
-        this.pushPages = function(scrollOffset, urlNextPage)
+        this.pushPages = function (scrollOffset, urlNextPage)
         {
             pagebreaks.push([scrollOffset, urlNextPage]);
         };
     };
 
     // history module
-    $.ias.history = function()
+    $.ias.history = function ()
     {
         // setup
         var isPushed = false;
         var isHtml5 = false;
-
-        // initialize
-        init();
 
         /**
          * Initialize
@@ -508,16 +629,19 @@
         {
             isHtml5 = !!(window.history && history.pushState && history.replaceState);
             isHtml5 = false; // html5 functions disabled due to problems in chrome
-        };
+        }
+
+        // initialize
+        init();
 
         /**
          * Sets page to history
          *
          * @return void;
          */
-        this.setPage = function(pageNum, pageUrl)
+        this.setPage = function (pageNum, pageUrl)
         {
-            this.updateState({page : pageNum}, "", pageUrl);
+            this.updateState({page : pageNum}, '', pageUrl);
         };
 
         /**
@@ -525,9 +649,9 @@
          *
          * @return bool returns true when we have a previous page, false otherwise
          */
-        this.havePage = function()
+        this.havePage = function ()
         {
-            return (this.getState() != false);
+            return (this.getState() !== false);
         };
 
         /**
@@ -535,8 +659,10 @@
          *
          * @return int page number of previous page
          */
-        this.getPage = function()
+        this.getPage = function ()
         {
+            var stateObj;
+
             if (this.havePage()) {
                 stateObj = this.getState();
                 return stateObj.page;
@@ -549,16 +675,22 @@
          *
          * @return object stateObj
          */
-        this.getState = function()
+        this.getState = function ()
         {
+            var haveState,
+                stateObj,
+                pageNum;
+
             if (isHtml5) {
                 stateObj = history.state;
-                if (stateObj && stateObj.ias) return stateObj.ias;
+                if (stateObj && stateObj.ias) {
+                    return stateObj.ias;
+                }
             }
             else {
-                haveState = (window.location.hash.substring(0, 7) == "#/page/");
+                haveState = (window.location.hash.substring(0, 7) === '#/page/');
                 if (haveState) {
-                    pageNum = parseInt(window.location.hash.replace("#/page/", ""));
+                    pageNum = parseInt(window.location.hash.replace('#/page/', ''), 10);
                     return { page : pageNum };
                 }
             }
@@ -575,7 +707,7 @@
          * @param string url
          * @return void
          */
-        this.updateState = function(stateObj, title, url)
+        this.updateState = function (stateObj, title, url)
         {
             if (isPushed) {
                 this.replaceState(stateObj, title, url);
@@ -593,13 +725,15 @@
          * @param string url
          * @return void
          */
-        this.pushState = function(stateObj, title, url)
+        this.pushState = function (stateObj, title, url)
         {
+            var hash;
+
             if (isHtml5) {
                 history.pushState({ ias : stateObj }, title, url);
             }
             else {
-                hash = (stateObj.page > 0 ? "#/page/" + stateObj.page : "");
+                hash = (stateObj.page > 0 ? '#/page/' + stateObj.page : '');
                 window.location.hash = hash;
             }
 
@@ -614,7 +748,7 @@
          * @param string url
          * @return void
          */
-        this.replaceState = function(stateObj, title, url)
+        this.replaceState = function (stateObj, title, url)
         {
             if (isHtml5) {
                 history.replaceState({ ias : stateObj }, title, url);
