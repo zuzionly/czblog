@@ -322,6 +322,11 @@ $('#wrap').delegate('a[data-pjax]', 'click', function(e) {
      }
 });
 
+$(document).on('pjax:complete', function() {
+    $('pre').addClass('prettyprint').addClass("linenums").addClass('pre-scrollable');
+    prettyPrint();
+})
+
 $(window).bind('popstate', function (e) {
     //prevent slide right when reload or scroll down/up
     if (e.originalEvent.state) {
