@@ -1,42 +1,170 @@
-﻿$.fn.autogrow = function(options) {
+﻿//~~~~~~~~~~~~~~~~~UI~~~~~~~~~~~~~~~~//
+var czblog = {};
 
-    this.filter('textarea').each(function() {
-
-        var $this       = $(this),
-                minHeight   = $this.height(),
-                lineHeight  = $this.css('lineHeight');
-
-        var shadow = $('<div></div>').css({
-            position:   'absolute',
-            top:        -10000,
-            left:       -10000,
-            width:      $(this).width(),
-            fontSize:   $this.css('fontSize'),
-            fontFamily: $this.css('fontFamily'),
-            lineHeight: $this.css('lineHeight'),
-            resize:     'none'
-        }).appendTo(document.body);
-
-        var update = function() {
-
-            var val = this.value.replace(/</g, '&lt;')
-                    .replace(/>/g, '&gt;')
-                    .replace(/&/g, '&amp;')
-                    .replace(/\n/g, '<br/>');
-
-            shadow.html(val);
-            $(this).css('height', Math.max(shadow.height() + 20, minHeight));
-        }
-
-        $(this).change(update).keyup(update).keydown(update);
-
-        update.apply(this);
-
-    });
-
-    return this;
+czblog.prettify = function(){
+    $('pre').addClass('prettyprint').addClass("linenums").addClass('pre-scrollable');
+    prettyPrint();
 }
 
+czblog.render = function(){
+    czblog.prettify();
+
+
+    $('#modal-from-delete').live('show', function() {
+        var id = $(this).data('id'),
+            removeBtn = $(this).find('.danger'),
+            href = removeBtn.attr('href');
+
+        removeBtn.attr('href', 'delete/'+id);
+    });
+
+    $('.confirm-delete').live('click',function(e) {
+        e.preventDefault();
+        var id = $(this).data('id');
+        $('#modal-from-delete').data('id', id).modal('show');
+    });
+
+    $('#fileName').live('change',function() {
+       $('#attach').val($(this).val());
+    });
+}
+
+czblog.bindTabs = function(){
+
+    //get current uri
+    var url = window.location.href
+    //get path
+    var path = url.split('/')[3];
+    if(''== path || 'post' == path){
+        $('#home').addClass('active');
+        $("#nav_tab > li[id!=home]").removeClass('active');
+    }else if('admin'== path || 'edit' == path){
+        $('#admin').addClass('active');
+        $("#nav_tab > li[id!=admin]").removeClass('active');
+    }else if('settings'==path){
+        $('#settings').addClass('active');
+        $("#nav_tab > li[id!=settings]").removeClass('active');
+    }else if('guestbook'==path){
+        $('#guestbook').addClass('active');
+        $("#nav_tab > li[id!=guestbook]").removeClass('active');
+    }else if('about'==path){
+        $('#about').addClass('active');
+        $("#nav_tab > li[id!=about]").removeClass('active');
+    }else{
+        $('#home').addClass('active');
+        $("#nav_tab > li[id!=home]").removeClass('active');
+    }
+    //end bind tab
+}
+
+czblog.prepareLoading = function(){
+    var $loading;
+    var _loading = {};
+
+    $loading = $('#loading');
+    _loading.points = new Array();
+    _loading.point = 0;
+    for (var i = 0, j = 0; j >= -4495; j-=155) {
+      _loading.points[i++] = j;
+    };
+
+    _loading.next = function() {
+        if(this.point == this.points.length) this.point = 0;
+        return this.points[this.point++];
+    }
+
+    _loading.animate = function() {
+        $loading.css("background-position", this.next() + "px 0");
+        if(!this.terminated) setTimeout(function() {_loading.animate()}, 30);
+    }
+
+    _loading.stop = function() {
+        this.terminated = true;
+        this.point = 0;
+    }
+
+    var showLoading = function() {
+        var margin_top = ($(window).height() - $loading.outerHeight()) / 2;
+        $loading.css("margin-top", margin_top + "px");
+        $("#lock").fadeIn();
+        _loading.terminated = false;
+        _loading.animate();
+      }
+
+    var hideLoading = function() {
+        $("#lock").fadeOut();
+        _loading.stop();
+    }
+
+    $(document)
+      .on('pjax:start', showLoading)
+      .on('pjax:end',   function() {
+        $("#lock").fadeOut();
+        _loading.stop();
+        czblog.bindTabs();
+        czblog.prettify();
+    })
+}
+
+
+// run on load
+$(function(){
+    // prepare loading and fade animates
+    czblog.prepareLoading();
+    // render prettify and other staff
+    czblog.render();
+    // bind tabs
+    czblog.bindTabs();
+
+    // scroll down pagination
+    jQuery.ias({
+        container : '.listing',
+        item: '.post',
+        pagination: '.pager',
+        next: '.next a',
+        loader: '<img src="/static/img/loader.gif"/>',
+        triggerPageThreshold: 2,
+        //turn off URL history
+        history:false,
+        noneleft:true,
+        //prettify after page changed
+        onRenderComplete: function(items) {
+            czblog.prettify();
+        }
+    });
+
+    // click blog titles
+    $('#wrap').delegate('a[data-pjax]', 'click', function(e) {
+        e.preventDefault();
+        var targetUrl = $(this).data('pjax');
+        //get current uri
+        var url = window.location.href
+        //get path
+        var path = url.split('/')[3];
+        if(targetUrl != ("/"+path)){
+            $(".slider").animate({"left":"-=1500px"}, "slow",function(){
+                $.pjax({
+                  url: targetUrl,
+                  container: '#main-content'
+                });
+             });
+         }
+    });
+
+    // click back button of browser
+    $(window).bind('popstate', function (e) {
+        //prevent slide right when reload or scroll down/up
+        if (e.originalEvent.state) {
+            var url = location.href
+            if(url.split('/').length<4 || (url.split('/').length>=4 && url.split('/')[3]!='post')){
+                $('.slider').animate({"left":"+=1500px"}, "slow");
+            }
+        }
+    });
+});
+//~~~~~~~~~~~~~~~~~UI~~~~~~~~~~~~~~~~//
+
+//~~~~~~~~~~~directly call util functions~~~~~~~~~~~~~~~~//
 function resetProgress(){
     $(".progress").hide();
     $(".alert").remove();
@@ -112,16 +240,15 @@ function sendMail(id,title){
         url:"/mail/"+id,
         data: {title: title,
                body: body}
-    }).done(function(data)
-    {
+    }).done(function(data){
         if(data.success==true){
             $("#result-"+id).html("<div class='alert alert-success'>send success!</div>")
         }else if (data.success==false){
             $("#result-"+id).html("<div class='alert alert-error'>send failed!</div>")
         }
     });
-
 }
+
 function issueSaveAjax(id, redirect){
     var pTitle   = $("#post_title").val();
     var pContent = $("#post_content").val();
@@ -185,157 +312,3 @@ function save_settings(redirect){
         }
     });
 }
-
-
-function render(){
-    $('pre').addClass('prettyprint').addClass("linenums").addClass('pre-scrollable');
-    prettyPrint();
-
-
-    $('#modal-from-delete').live('show', function() {
-        var id = $(this).data('id'),
-            removeBtn = $(this).find('.danger'),
-            href = removeBtn.attr('href');
-
-        removeBtn.attr('href', 'delete/'+id);
-    });
-
-    $('.confirm-delete').live('click',function(e) {
-        e.preventDefault();
-        var id = $(this).data('id');
-        $('#modal-from-delete').data('id', id).modal('show');
-    });
-
-    $('#fileName').live('change',function() {
-       $('#attach').val($(this).val());
-    });
-}
-
-function preRender(){
-    var $loading;
-    var _loading = {};
-
-    $loading = $('#loading');
-    _loading.points = new Array();
-    _loading.point = 0;
-    for (var i = 0, j = 0; j >= -4495; j-=155) {
-      _loading.points[i++] = j;
-    };
-
-    _loading.next = function() {
-        if(this.point == this.points.length) this.point = 0;
-        return this.points[this.point++];
-    }
-
-    _loading.animate = function() {
-        $loading.css("background-position", this.next() + "px 0");
-        if(!this.terminated) setTimeout(function() {_loading.animate()}, 30);
-    }
-
-    _loading.stop = function() {
-        this.terminated = true;
-        this.point = 0;
-    }
-
-    var showLoading = function() {
-        var margin_top = ($(window).height() - $loading.outerHeight()) / 2;
-        $loading.css("margin-top", margin_top + "px");
-        $("#lock").fadeIn();
-        _loading.terminated = false;
-        _loading.animate();
-      }
-
-    var hideLoading = function() {
-        $("#lock").fadeOut();
-        _loading.stop();
-    }
-
-    $(document)
-      .on('pjax:start', showLoading)
-      .on('pjax:end',   function() {$("#lock").fadeOut();_loading.stop();bindTabs();})
-}
-
-function bindTabs(){
-
-    //get current uri
-    var url = window.location.href
-    //get path
-    var path = url.split('/')[3];
-    if(''== path || 'post' == path){
-        $('#home').addClass('active');
-        $("#nav_tab > li[id!=home]").removeClass('active');
-    }else if('admin'== path || 'edit' == path){
-        $('#admin').addClass('active');
-        $("#nav_tab > li[id!=admin]").removeClass('active');
-    }else if('settings'==path){
-        $('#settings').addClass('active');
-        $("#nav_tab > li[id!=settings]").removeClass('active');
-    }else if('guestbook'==path){
-        $('#guestbook').addClass('active');
-        $("#nav_tab > li[id!=guestbook]").removeClass('active');
-    }else if('about'==path){
-        $('#about').addClass('active');
-        $("#nav_tab > li[id!=about]").removeClass('active');
-    }else{
-        $('#home').addClass('active');
-        $("#nav_tab > li[id!=home]").removeClass('active');
-    }
-    //end bind tab
-
-}
-
-// run on load
-$(function(){
-    preRender();
-    render();
-    bindTabs();
-    jQuery.ias({
-    	container : '.listing',
-    	item: '.post',
-    	pagination: '.pager',
-    	next: '.next a',
-    	loader: '<img src="/static/img/loader.gif"/>',
-        triggerPageThreshold: 2,
-        history:false,
-        noneleft:true,
-        onRenderComplete: function(items) {
-            $('pre').addClass('prettyprint').addClass("linenums").addClass('pre-scrollable');
-            prettyPrint();
-        }
-    });
-});
-
-$('#wrap').delegate('a[data-pjax]', 'click', function(e) {
-    e.preventDefault();
-    var targetUrl = $(this).data('pjax');
-    //get current uri
-    var url = window.location.href
-    //get path
-    var path = url.split('/')[3];
-    if(targetUrl != ("/"+path)){
-        $(".slider").animate({"left":"-=1500px"}, "slow",function(){
-            $.pjax({
-              url: targetUrl,
-              container: '#main-content'
-            });
-         });
-     }
-});
-
-$(document).on('pjax:complete', function() {
-    $('pre').addClass('prettyprint').addClass("linenums").addClass('pre-scrollable');
-    prettyPrint();
-})
-
-$(window).bind('popstate', function (e) {
-    //prevent slide right when reload or scroll down/up
-    if (e.originalEvent.state) {
-        var url = location.href
-        if(url.split('/').length<4 || (url.split('/').length>=4 && url.split('/')[3]!='post')){
-            $('.slider').animate({"left":"+=1500px"}, "slow");
-        }
-    }
-});
-
-
-
